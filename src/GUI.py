@@ -15,7 +15,7 @@ import subprocess
 import pickle
 import re, os
 
-class MyGUI:   
+class MyGUI: 
     
     def __init__(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas line '''
@@ -23,6 +23,7 @@ class MyGUI:
         self.main_window.geometry('520x390') # width x height
         self.main_window.configure(background='lightgrey') # app background color 
         self.main_window.title('Company') # app title
+        self.main_window.resizable(0, 0)
 
         # start xampp app -- the following commented out code was blocked because of a taskkill issue
         # instead I'm using subprocess module to open and close xampp 
@@ -59,6 +60,9 @@ class MyGUI:
         # create an output box (GUI entry)
         self.output_entry = tk.Entry(width = 20, \
                                 textvariable = self.output_entry_var) 
+        
+        # sets focus on the first text field in app on startup
+        self.output_entry.focus_set()
         
         # GUI button
         self.my_button2 = tk.Button(text = 'Add New Employee',
@@ -146,7 +150,7 @@ class MyGUI:
 
         
         self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
-        command = self.closeFunc)
+        command = self.close_function)
 
 
         self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file)
@@ -161,7 +165,7 @@ class MyGUI:
 
 
         # display formatted label in app 
-        self.label7 = tk.Label(text = 'developed by Brian Perel', font = 'Courier 10', \
+        self.label7 = tk.Label(text = 'created by Brian Perel', font = 'Courier 10', \
                                                         bg='lightgrey')
 
 
@@ -204,29 +208,27 @@ class MyGUI:
         self.label7.place(x = 160, y = 360)
 
         # if file exists, skip this process; don't create a new file  
-        if os.path.isfile('Employees.dat'):
+        if os.path.isfile(DATA_FILE):
             pass
 
         else:
             # create a new binary file to store binary object info, if one doesn't
             # already exist in folder 
-            file_obj = open('Employees.dat', 'wb')
+            file_obj = open(DATA_FILE, 'wb')
             file_obj.close()
 
         # statement needed to launch gui window 
         self.main_window.mainloop()
 
 
-
-
 # App operations:
 
     
-
     # create the empty dictionary
     employees = {}
 
-    def closeFunc(self):
+    # performs actions when closing the app
+    def close_function(self):
 
         # close xampp app 
         xampp.terminate()
@@ -236,7 +238,7 @@ class MyGUI:
         # close gui window            
         self.main_window.destroy()
 
-
+    # actions performed for when looking up an employee
     def look_up_employee(self):
 
         # connect to the database using credentials 
@@ -273,14 +275,15 @@ class MyGUI:
         try:
             sql = "SELECT * FROM employees WHERE ID = %s"
             self.mycursor.execute(sql, (ID,))
-            display = self.mycursor.fetchall()
-            for data in display:
+            display_data = self.mycursor.fetchall()
+            for data in display_data:
                 pass
 
         except mysql.connector.Error as err:
+            print('Exception caught: ' + err)
             pass
-
             
+    # actions for when adding an employee 
     def add_employee(self):
 
         # connect to the database using credentials 
@@ -289,6 +292,7 @@ class MyGUI:
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
+            print('Exception caught: ' + err)
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -385,7 +389,7 @@ class MyGUI:
             pay_rate = pay_rate[:index] + '$' + pay_rate[index:]
 
             # serialize the object 
-            file_obj = open('Employees.dat', 'ab')
+            file_obj = open(DATA_FILE, 'ab')
             pickle.dump(new_emp, file_obj)
             
             file_obj.close()
@@ -418,6 +422,7 @@ class MyGUI:
         self.output_entry_var4.set(''), self.output_entry_var5.set('')
         self.radio_var.set(0)
 
+    # actions performed to updated an employee's data in the app
     def update_employee(self):
 
         # connect to the database using credentials 
@@ -450,6 +455,7 @@ class MyGUI:
             int(ID)
 
         except ValueError as err:
+            print(err)
             check = False
 
         if ID in self.employees:
@@ -494,7 +500,7 @@ class MyGUI:
         self.output_entry_var4.set(''), self.output_entry_var5.set('')
         self.radio_var.set(0)
 
-        
+    # deletes the employee from the app
     def delete_employee(self):
 
         # connect to the database using credentials 
@@ -503,6 +509,7 @@ class MyGUI:
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
+            print('Exception caught: ' + err)
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -537,6 +544,7 @@ class MyGUI:
         self.output_entry_var4.set(''), self.output_entry_var5.set('')
         self.radio_var.set(0)
 
+    # actions performed to reset the app 
     def reset_system(self):
 
         # connect to the database using credentials 
@@ -562,15 +570,14 @@ class MyGUI:
             This will delete all data in app and database ''' 
         self.employees = {}            
 
-        
         try:
             self.mycursor.execute('DROP TABLE employees')
-            os.remove('employees.dat')
-            tk.messagebox.showinfo('Info', 'System has been reset, table and employees.dat deleted')
+            os.remove(DATA_FILE)
+            tk.messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE + ' deleted')
         except mysql.connector.Error as err:
-            tk.messagebox.showinfo('Info', 'Database not found, file not found')
-        except FileNotFoundError:
-            tk.messagebox.showinfo('Info', 'File not found')
+            tk.messagebox.showinfo('Info', 'Database not found, file not found\n' + err)
+        except FileNotFoundError as err:
+            tk.messagebox.showinfo('Info', 'File not found' + err)
 
         # set all entry widgets to a blank value        
         self.output_entry_var.set(''), self.output_entry_var1.set('')
@@ -578,14 +585,16 @@ class MyGUI:
         self.output_entry_var4.set(''), self.output_entry_var5.set('')
         self.radio_var.set(0)
 
-
+    # actions performed for when loading the .dat data file into the app
     def load_file(self):
+        
         # connect to the database using credentials 
         try:
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
+            print('Exception caught: ', err)
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -604,12 +613,12 @@ class MyGUI:
         saved from the last time app is used '''
         
         try:
-            if os.stat('employees.dat').st_size == 0:
+            if os.stat(DATA_FILE).st_size == 0:
                 message = 'File is empty'
                 tk.messagebox.showinfo('Info', message)
 
             else: 
-                file_obj = open('employees.dat', 'rb')
+                file_obj = open(DATA_FILE, 'rb')
                 content = pickle.load(file_obj)
 
                 try:
@@ -620,14 +629,18 @@ class MyGUI:
                     file_obj.close()
                     
                 except EOFError as err:
+                    print('Exception caught: ' + err)
                     pass
             
         except FileNotFoundError as err:
-            tk.messagebox.showinfo('Info', 'File not found')
+            tk.messagebox.showinfo('Info', 'File not found\n' + err)
   
         
 # start xampp app 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
+    
+# defines the file to save the apps employee profiles to. File can be loaded later
+DATA_FILE = '..\\Employees.dat'
     
 # create instance of MyGUI class
 my_gui = MyGUI() 
