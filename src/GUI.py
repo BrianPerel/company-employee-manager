@@ -14,7 +14,6 @@ import mysql.connector
 import subprocess
 import pickle
 import re, os
-from genericpath import isfile
 
 class MyGUI: 
     
