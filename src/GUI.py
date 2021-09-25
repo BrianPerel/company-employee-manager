@@ -272,10 +272,12 @@ class MyGUI:
             self.mycursor.execute(sql, (ID,))
             display_data = self.mycursor.fetchall()
             for data in display_data:
-                print("Displaying current employee ID's record: " + data)
+                print("Displaying current employee ID's record: " + str(data))
 
         except mysql.connector.Error as err:
             print('Exception caught: ' + err)
+            
+        self.output_entry.focus_set()
             
     # actions for when adding an employee 
     def add_employee(self):
@@ -414,6 +416,8 @@ class MyGUI:
         self.output_entry_var2.set(''), self.output_entry_var3.set('')
         self.output_entry_var4.set(''), self.output_entry_var5.set('')
         self.radio_var.set(0)
+        
+        self.output_entry.focus_set()
 
     # actions performed to updated an employee's data in the app
     def update_employee(self):
@@ -442,6 +446,7 @@ class MyGUI:
             in dictionary, by attaining info from GUI '''
         message = ''
         check = True 
+        
         # get values from entry box widget
         try:
             ID = self.output_entry.get()
@@ -537,7 +542,7 @@ class MyGUI:
         self.output_entry_var4.set(''), self.output_entry_var5.set('')
         self.radio_var.set(0)
 
-    # actions performed to reset the app 
+    # actions performed to reset the app - deletes app memory, db, and .dat file
     def reset_system(self):
 
         # connect to the database using credentials 
