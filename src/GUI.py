@@ -8,12 +8,13 @@ GUI Employee Management System using XAMPP and sql-connect module
 '''
 
 import tkinter as tk 
-import tkinter.messagebox
+import tkinter.messagebox as messagebox
 import Employee_Management_System as EMS
 import mysql.connector
 import subprocess
 import pickle
 import re, os
+from genericpath import isfile
 
 class MyGUI: 
     
@@ -150,8 +151,7 @@ class MyGUI:
 
         
         self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
-        command = self.close_function)
-
+        command = self.close_app)
 
         self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file)
 
@@ -168,11 +168,9 @@ class MyGUI:
         self.label7 = tk.Label(text = 'created by Brian Perel', font = 'Courier 10', \
                                                         bg='lightgrey')
 
-
         # store app input value into check box variable 
         self.cb_var1 = tk.IntVar()
 
-        self.cb_var1.set(0)
         self.conn_close = tk.Checkbutton(text='Close MySQL Connection', variable = self.cb_var1, bg='lightgrey')
 
         # Value 1 stands for checked check box, if user puts checkmark, we close the db connection to localhost 
@@ -207,11 +205,8 @@ class MyGUI:
         self.canvas2.place(x = 10, y = 328)
         self.label7.place(x = 160, y = 360)
 
-        # if file exists, skip this process; don't create a new file  
-        if os.path.isfile(DATA_FILE):
-            pass
-
-        else:
+        # create a new file only if file doesn't exist, otherwise don't
+        if not os.path.isfile(DATA_FILE):
             # create a new binary file to store binary object info, if one doesn't
             # already exist in folder 
             file_obj = open(DATA_FILE, 'wb')
@@ -228,11 +223,12 @@ class MyGUI:
     employees = {}
 
     # performs actions when closing the app
-    def close_function(self):
+    def close_app(self):
 
         # close xampp app 
         xampp.terminate()
         
+        # below line is commented because taskkill isn't being recognized
         # os.system('taskkill /im xampp-control.exe')
 
         # close gui window            
@@ -277,11 +273,10 @@ class MyGUI:
             self.mycursor.execute(sql, (ID,))
             display_data = self.mycursor.fetchall()
             for data in display_data:
-                pass
+                print("Displaying current employee ID's record: " + data)
 
         except mysql.connector.Error as err:
             print('Exception caught: ' + err)
-            pass
             
     # actions for when adding an employee 
     def add_employee(self):
@@ -363,8 +358,7 @@ class MyGUI:
            pay_rate = pay_rate.replace("$", "")
 
         # cast to float and format number, cast pay_rate back to string 
-        pay_rate = format(float(pay_rate), '.2f')
-        pay_rate = str(pay_rate)
+        pay_rate = str(format(float(pay_rate), '.2f'))
 
         # create instance and send the values 
         new_emp = EMS.Employee(
@@ -527,7 +521,7 @@ class MyGUI:
             self.mydb.commit()
 
         except mysql.connector.Error as err:
-            pass
+            print(err)
 
         # to delete an employee, must be in db. Perform this check 
         if ID in self.employees:
@@ -630,7 +624,6 @@ class MyGUI:
                     
                 except EOFError as err:
                     print('Exception caught: ' + err)
-                    pass
             
         except FileNotFoundError as err:
             tk.messagebox.showinfo('Info', 'File not found\n' + err)
