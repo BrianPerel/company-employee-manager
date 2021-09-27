@@ -12,6 +12,7 @@ import tkinter.messagebox as messagebox
 import Employee_Management_System as EMS
 import mysql.connector
 import subprocess
+import webbrowser
 import pickle
 import re, os
 
@@ -20,10 +21,10 @@ class MyGUI:
     def __init__(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas line '''
         self.main_window = tk.Tk() # make the GUI window
-        self.main_window.geometry('520x390') # width x height
-        self.main_window.configure(background='lightgrey') # app background color 
+        self.main_window.geometry('520x390') # width x height of the GUI window
+        self.main_window.configure(background='lightgrey') # app (GUI) background color 
         self.main_window.title('Company') # app title
-        self.main_window.resizable(0, 0)
+        self.main_window.resizable(0, 0) # disable resizable option for GUI
 
         # start xampp app -- the following commented out code was blocked because of a taskkill issue
         # instead I'm using subprocess module to open and close xampp 
@@ -153,7 +154,9 @@ class MyGUI:
         command = self.close_app)
 
         self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file)
-
+        
+        self.visit_db = tk.Button(text='Visit DB website', font = 'Courier 10', command = self.open_website_link)
+        
         # build line between body of app and footer 
         self.canvas2 = tk.Canvas(self.main_window, width=495, height=40, bd=0, \
                             borderwidth=0, bg='lightgrey', highlightthickness=0.5, \
@@ -168,7 +171,8 @@ class MyGUI:
                                                         bg='lightgrey')
 
         # store app input value into check box variable 
-        self.cb_var1 = tk.IntVar()
+        # value is preselected to be 1 to automatically close the connection
+        self.cb_var1 = tk.StringVar()
 
         self.conn_close = tk.Checkbutton(text='Close MySQL Connection', variable = self.cb_var1, bg='lightgrey')
 
@@ -200,7 +204,7 @@ class MyGUI:
         self.reset_button.place(x = 10, y = 225)
         self.quit_button.place(x = 110, y = 300)
         self.load_button.place(x = 10, y = 300)
-        self.conn_close.place(x = 10, y = 265)
+        self.visit_db.place(x = 10, y = 265)
         self.canvas2.place(x = 10, y = 328)
         self.label7.place(x = 160, y = 360)
 
@@ -632,8 +636,12 @@ class MyGUI:
         except FileNotFoundError as err:
             tk.messagebox.showinfo('Info', 'File not found\n' + err)
   
+    
+    def open_website_link(self):
         
-# start xampp app 
+        webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
+        
+# start xampp app z
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
     
 # defines the file to save the apps employee profiles to. File can be loaded later
