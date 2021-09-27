@@ -280,7 +280,7 @@ class MyGUI:
                 print("Displaying current employee ID's record: " + str(data))
 
         except mysql.connector.Error as err:
-            print('Exception caught: ' + err)
+            print('Exception caught: ' + str(err))
             
         self.output_entry.focus_set()
             
@@ -293,7 +293,7 @@ class MyGUI:
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
-            print('Exception caught: ' + err)
+            print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -301,7 +301,7 @@ class MyGUI:
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30),\
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
@@ -361,7 +361,7 @@ class MyGUI:
 
         # if user entered $ in pay_rate, remove it to enable casting to float which we do to format the number 
         if("$" in pay_rate):
-           pay_rate = pay_rate.replace("$", "")
+            pay_rate = pay_rate.replace("$", "")
 
         # cast to float and format number, cast pay_rate back to string 
         pay_rate = str(format(float(pay_rate), '.2f'))
@@ -370,7 +370,7 @@ class MyGUI:
         new_emp = EMS.Employee(
                     name, ID, dept, title, pay_rate, phone_number, work_type)
 
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30), \
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), Work_Type VARCHAR(30))')
@@ -441,7 +441,7 @@ class MyGUI:
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30),\
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
@@ -512,7 +512,7 @@ class MyGUI:
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
-            print('Exception caught: ' + err)
+            print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -563,7 +563,7 @@ class MyGUI:
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30),\
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
@@ -576,7 +576,7 @@ class MyGUI:
         try:
             self.mycursor.execute('DROP TABLE employees')
             os.remove(DATA_FILE)
-            tk.messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE + ' deleted')
+            tk.messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE[3:] + ' deleted')
         except mysql.connector.Error as err:
             tk.messagebox.showinfo('Info', 'Database not found, file not found\n' + err)
         except FileNotFoundError as err:
@@ -597,7 +597,7 @@ class MyGUI:
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
-            print('Exception caught: ', err)
+            print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -605,7 +605,7 @@ class MyGUI:
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30),\
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
@@ -632,10 +632,10 @@ class MyGUI:
                     file_obj.close()
                     
                 except EOFError as err:
-                    print('Exception caught: ' + err)
+                    print('Exception caught: ' + str(err))
             
         except FileNotFoundError as err:
-            tk.messagebox.showinfo('Info', 'File not found\n' + err)
+            tk.messagebox.showinfo('Info', 'File not found\n' + str(err))
   
     # opens xampp's MySQL module's admin website via direct link
     def open_website_link(self):
