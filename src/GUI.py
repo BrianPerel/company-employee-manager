@@ -21,7 +21,7 @@ class MyGUI:
     def __init__(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas line '''
         self.main_window = tk.Tk() # make the GUI window
-        self.main_window.geometry('520x390') # width x height of the GUI window
+        self.main_window.geometry('520x410') # width x height of the GUI window
         self.main_window.configure(background='lightgrey') # app (GUI) background color 
         self.main_window.title('Company') # app title
         self.main_window.resizable(0, 0) # disable resizable option for GUI
@@ -163,8 +163,7 @@ class MyGUI:
                             highlightbackground='lightgrey')
 
         # create line between body of app and footer 
-        self.canvas2.create_line(2, 25, 800, 25)
-
+        self.canvas2.create_line(2, 25, 600, 25)
 
         # display formatted label in app 
         self.label7 = tk.Label(text = 'created by Brian Perel', font = 'Courier 10', \
@@ -176,12 +175,8 @@ class MyGUI:
 
         self.conn_close = tk.Checkbutton(text='Close MySQL Connection', variable = self.cb_var1, bg='lightgrey')
 
-        # Value 1 stands for checked check box, if user puts checkmark, we close the db connection to localhost 
-        if self.cb_var1.get() == 1:
-            self.mydb.close()
-
         # make program position and display all gui components (widgets) 
-        self.header.place(x = 120, y = 0)
+        self.header.place(x = 120, y = 1)
         self.canvas.place(x = 10, y = 20)
         self.my_button1.place(x = 10, y = 65)
         self.label1.place(x = 203, y = 67)
@@ -199,14 +194,14 @@ class MyGUI:
         self.output_entry4.place(x = 380, y = 227)
         self.label6.place(x = 200, y = 265)
         self.output_entry5.place(x = 380, y = 267)
-        self.rb1.place(x = 240, y = 305)
-        self.rb2.place(x = 380, y = 305)
+        self.rb1.place(x = 240, y = 307)
+        self.rb2.place(x = 380, y = 307)
         self.reset_button.place(x = 10, y = 225)
-        self.quit_button.place(x = 110, y = 300)
-        self.load_button.place(x = 10, y = 300)
         self.visit_db.place(x = 10, y = 265)
-        self.canvas2.place(x = 10, y = 328)
-        self.label7.place(x = 160, y = 360)
+        self.load_button.place(x = 10, y = 305)
+        self.quit_button.place(x = 110, y = 305)
+        self.canvas2.place(x = 10, y = 335)
+        self.label7.place(x = 160, y = 375)
 
         # create a new file only if file doesn't exist, otherwise don't
         if not os.path.isfile(DATA_FILE):
@@ -214,10 +209,12 @@ class MyGUI:
             # already exist in folder 
             file_obj = open(DATA_FILE, 'wb')
             file_obj.close()
+            
+        self.main_window.protocol("WM_DELETE_WINDOW", self.close_app)
 
         # statement needed to launch gui window 
         self.main_window.mainloop()
-
+        
 
 # App operations:
 
@@ -227,6 +224,10 @@ class MyGUI:
 
     # performs actions when closing the app
     def close_app(self):
+        
+        # Value 1 stands for checked check box, if user puts checkmark, we close the db connection to localhost 
+        if self.cb_var1.get() == 1:
+            self.mydb.close()
 
         # close xampp app 
         xampp.terminate()
@@ -636,16 +637,17 @@ class MyGUI:
         except FileNotFoundError as err:
             tk.messagebox.showinfo('Info', 'File not found\n' + err)
   
-    
+    # opens xampp's MySQL module's admin website via direct link
     def open_website_link(self):
         
         webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
+        
         
 # start xampp app z
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
     
 # defines the file to save the apps employee profiles to. File can be loaded later
 DATA_FILE = '..\\Employees.dat'
-    
+        
 # create instance of MyGUI class
 my_gui = MyGUI() 

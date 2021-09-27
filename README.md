@@ -9,6 +9,6 @@ NOTE: you must have Python's mysql connector module installed to do dev. work
 Use these cmds in cmd prompt to generate a .exe binary file of the application
 pyinstaller must be installed in cmd prompt to run 
 the following cmd (if not installed use 'pip install pyinstaller')
-pyinstaller --noconsole --onefile GUI.py --icon=icon.ico --name App
+pyinstaller --noconsole --onefile GUI.py --icon=res/icon.ico --name App
 
 [Check it out here](https://brianperel.github.io/project2.html)
