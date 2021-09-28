@@ -26,15 +26,6 @@ class MyGUI:
         self.main_window.title('Company') # app title
         self.main_window.resizable(0, 0) # disable resizable option for GUI
 
-        # start xampp app -- the following commented out code was blocked because of a taskkill issue
-        # instead I'm using subprocess module to open and close xampp 
-         
-        #try:
-        #   os.startfile('C:\\xampp\\xampp-control.exe')
-
-        #except Exception as e:
-        #   print(str(e))
-
         # create a GUI label (display EMPLOYEE MANAGEMENT SYSTEM) = the header of the GUI app
         self.header = tk.Label(text = 'EMPLOYEE MANAGEMENT SYSTEM',
                                font = 'Times 12 bold', bg='lightgrey')
@@ -210,7 +201,7 @@ class MyGUI:
             file_obj = open(DATA_FILE, 'wb')
             file_obj.close()
             
-        self.main_window.protocol("WM_DELETE_WINDOW", self.close_app)
+        self.main_window.protocol('WM_DELETE_WINDOW', self.close_app)
 
         # statement needed to launch gui window 
         self.main_window.mainloop()
@@ -231,9 +222,6 @@ class MyGUI:
 
         # close xampp app 
         xampp.terminate()
-        
-        # below line is commented because taskkill isn't being recognized
-        # os.system('taskkill /im xampp-control.exe')
 
         # close gui window            
         self.main_window.destroy()
@@ -251,7 +239,6 @@ class MyGUI:
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
-    
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
     
@@ -266,23 +253,17 @@ class MyGUI:
         # create a showinfo message box 
         tk.messagebox.showinfo('Employee Info', str(message))
 
-        # set all entry widgets to a blank value
-        self.output_entry_var.set(''), self.output_entry_var1.set('')
-        self.output_entry_var2.set(''), self.output_entry_var3.set('')
-        self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0)
-
         try:
-            sql = "SELECT * FROM employees WHERE ID = %s"
+            sql = 'SELECT * FROM employees WHERE ID = %s'
             self.mycursor.execute(sql, (ID,))
             display_data = self.mycursor.fetchall()
             for data in display_data:
-                print("Displaying current employee ID's record: " + str(data))
+                print('Displaying current employee ID\'s record: ' + str(data))
 
         except mysql.connector.Error as err:
             print('Exception caught: ' + str(err))
             
-        self.output_entry.focus_set()
+        self.clear_gui_entry_fields()
             
     # actions for when adding an employee 
     def add_employee(self):
@@ -319,16 +300,13 @@ class MyGUI:
             dept = self.output_entry2.get()
             title = self.output_entry3.get()
             pay_rate = self.output_entry4.get()
-            phone_number = self.output_entry5.get()
-
-            # perform cast operations, since ID should be only INT (whole) value and pay_rate only float (decimal) 
-            int(ID)             
+            phone_number = self.output_entry5.get()      
             
         except ValueError:
             check = False
 
         # if user entered phone number without including dashes, manually attach them 
-        if "-" not in phone_number:
+        if '-' not in phone_number:
             p1 = phone_number[:3]
             p2 = phone_number[3:6]
             p3 = phone_number[6:10]
@@ -357,11 +335,12 @@ class MyGUI:
             
             # show info message box with data 
             tk.messagebox.showinfo('Info', message)
+            self.clear_gui_entry_fields()        
             return
 
         # if user entered $ in pay_rate, remove it to enable casting to float which we do to format the number 
-        if("$" in pay_rate):
-            pay_rate = pay_rate.replace("$", "")
+        if('$' in pay_rate):
+            pay_rate = pay_rate.replace('$', '')
 
         # cast to float and format number, cast pay_rate back to string 
         pay_rate = str(format(float(pay_rate), '.2f'))
@@ -401,7 +380,6 @@ class MyGUI:
             val = (ID, name, dept, title, pay_rate, phone_number, work_type)
             self.mycursor.execute(sql, val)
             self.mydb.commit()
-
         
         # input validation: make sure no fields are blank  
         elif ID == '' or name == '' or dept == '' or title == '' \
@@ -415,14 +393,8 @@ class MyGUI:
 
         # show info message box with data 
         tk.messagebox.showinfo('Info', message)
-        
-        # set all entry widgets to a blank value
-        self.output_entry_var.set(''), self.output_entry_var1.set('')
-        self.output_entry_var2.set(''), self.output_entry_var3.set('')
-        self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0)
-        
-        self.output_entry.focus_set()
+
+        self.clear_gui_entry_fields()        
 
     # actions performed to updated an employee's data in the app
     def update_employee(self):
@@ -454,8 +426,7 @@ class MyGUI:
         
         # get values from entry box widget
         try:
-            ID = self.output_entry.get()
-            int(ID)
+            ID = int(self.output_entry.get())
 
         except ValueError as err:
             print(err)
@@ -497,11 +468,7 @@ class MyGUI:
 
         tk.messagebox.showinfo('Info', message)
 
-        # set all entry widgets to a blank value
-        self.output_entry_var.set(''), self.output_entry_var1.set('')
-        self.output_entry_var2.set(''), self.output_entry_var3.set('')
-        self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0)
+        self.clear_gui_entry_fields()
 
     # deletes the employee from the app
     def delete_employee(self):
@@ -525,7 +492,7 @@ class MyGUI:
         ID = self.output_entry.get()
 
         try:       
-            sql = "DELETE FROM employees WHERE ID = %s"
+            sql = 'DELETE FROM employees WHERE ID = %s'
             self.mycursor.execute(sql, (ID,))
             self.mydb.commit()
 
@@ -541,11 +508,7 @@ class MyGUI:
 
         tk.messagebox.showinfo('Info', message)
         
-        # set all entry widgets to a blank value
-        self.output_entry_var.set(''), self.output_entry_var1.set('')
-        self.output_entry_var2.set(''), self.output_entry_var3.set('')
-        self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0)
+        self.clear_gui_entry_fields()
 
     # actions performed to reset the app - deletes app memory, db, and .dat file
     def reset_system(self):
@@ -582,11 +545,7 @@ class MyGUI:
         except FileNotFoundError as err:
             tk.messagebox.showinfo('Info', 'File not found' + err)
 
-        # set all entry widgets to a blank value        
-        self.output_entry_var.set(''), self.output_entry_var1.set('')
-        self.output_entry_var2.set(''), self.output_entry_var3.set('')
-        self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0)
+        self.clear_gui_entry_fields()
 
     # actions performed for when loading the .dat data file into the app
     def load_file(self):
@@ -617,8 +576,7 @@ class MyGUI:
         
         try:
             if os.stat(DATA_FILE).st_size == 0:
-                message = 'File is empty'
-                tk.messagebox.showinfo('Info', message)
+                tk.messagebox.showinfo('Info', 'File is empty')
 
             else: 
                 file_obj = open(DATA_FILE, 'rb')
@@ -636,14 +594,25 @@ class MyGUI:
             
         except FileNotFoundError as err:
             tk.messagebox.showinfo('Info', 'File not found\n' + str(err))
+            
+        self.clear_gui_entry_fields()
   
     # opens xampp's MySQL module's admin website via direct link
     def open_website_link(self):
         
         webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
         
+    def clear_gui_entry_fields(self):
+
+        # set all entry widgets to a blank value
+        self.output_entry_var.set(''), self.output_entry_var1.set('')
+        self.output_entry_var2.set(''), self.output_entry_var3.set('')
+        self.output_entry_var4.set(''), self.output_entry_var5.set('')
+        self.radio_var.set(0)
         
-# start xampp app z
+        self.output_entry.focus_set()
+        
+# start xampp using the subprocess module 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
     
 # defines the file to save the apps employee profiles to. File can be loaded later
