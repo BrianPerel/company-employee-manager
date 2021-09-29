@@ -260,6 +260,7 @@ class MyGUI:
 
         # if can't connect to db then db doesn't exist. Just connect to localhost site 
         except mysql.connector.Error as err:
+            print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -326,7 +327,8 @@ class MyGUI:
             pay_rate = self.output_entry4.get()
             phone_number = self.output_entry5.get()      
             
-        except ValueError:
+        except ValueError as err:
+            print('Exception caught: ' + str(err))
             check = False
 
         # if user entered phone number without including dashes, manually attach them 
@@ -354,11 +356,9 @@ class MyGUI:
             work_type = 'Full time'
 
         # if user provides a pay rate 
-        if(len(pay_rate) == 0):
-            message = 'Could not add employee.'
-            
+        if(len(pay_rate) == 0):          
             # show info message box with data 
-            tk.messagebox.showinfo('Info', message)
+            tk.messagebox.showinfo('Info', 'Could not add employee.')
             self.clear_gui_entry_fields()        
             return
 
@@ -388,22 +388,26 @@ class MyGUI:
             message = 'The new employee has been added'
 
             # add a $ to pay_rate before adding it to the table in database 
-            index = pay_rate.find(pay_rate)
-            pay_rate = pay_rate[:index] + '$' + pay_rate[index:]
+            pay_rate = pay_rate[:pay_rate.find(pay_rate)] + '$' + pay_rate[pay_rate.find(pay_rate):]
 
             # serialize the object 
             file_obj = open(DATA_FILE, 'ab')
             pickle.dump(new_emp, file_obj)
             
             file_obj.close()
-
+            
             # insert data into db table 
             sql = 'INSERT INTO employees (ID, Name, Deptartment, Title, \
             Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s)'
-                
+                            
             val = (ID, name, dept, title, pay_rate, phone_number, work_type)
-            self.mycursor.execute(sql, val)
-            self.mydb.commit()
+            try:
+                self.mycursor.execute(sql, val)
+                self.mydb.commit()
+            except mysql.connector.Error as err:
+                message = 'An employee with that ID already exists.'
+                self.clear_gui_entry_fields()
+                print('Exception caught: ' + str(err)) 
         
         # input validation: make sure no fields are blank  
         elif ID == '' or name == '' or dept == '' or title == '' \
@@ -453,7 +457,7 @@ class MyGUI:
             ID = int(self.output_entry.get())
 
         except ValueError as err:
-            print(err)
+            print('Exception caught: ' + str(err))
             check = False
 
         if ID in self.employees:
@@ -521,7 +525,7 @@ class MyGUI:
             self.mydb.commit()
 
         except mysql.connector.Error as err:
-            print(err)
+            print('Exception caught: ' + str(err))
 
         # to delete an employee, must be in db. Perform this check 
         if ID in self.employees:
@@ -543,6 +547,7 @@ class MyGUI:
                 host='localhost', user='root', passwd='', database='employee_db')
 
         except mysql.connector.Error as err:
+            print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
                 host='localhost', user='root', passwd='')
 
@@ -565,9 +570,9 @@ class MyGUI:
             os.remove(DATA_FILE)
             tk.messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE[3:] + ' deleted')
         except mysql.connector.Error as err:
-            tk.messagebox.showinfo('Info', 'Database not found, file not found\n' + err)
+            tk.messagebox.showinfo('Info', 'Database not found, file not found\n' + str(err))
         except FileNotFoundError as err:
-            tk.messagebox.showinfo('Info', 'File not found' + err)
+            tk.messagebox.showinfo('Info', 'File not found\n' + str(err))
 
         self.clear_gui_entry_fields()
 
