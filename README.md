@@ -4,7 +4,7 @@ The app will require you to have xampp installed on your machine.
 You will need to open the xampp control panel and have Apache and MySQL running before you run the app.  
 
 NOTE: you must have Python's mysql connector module installed to do dev. work
--run the cmds 'pip install mysql-connector-python'
+-if not run the cmds 'pip install mysql-connector-python'
 
 Use these cmds in cmd prompt to generate a .exe binary file of the application
 pyinstaller must be installed in cmd prompt to run 
