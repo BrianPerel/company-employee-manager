@@ -60,7 +60,7 @@ class MyGUI:
         self.my_button2 = tk.Button(text = 'Add New Employee',
                             font = 'Courier 10', \
                             command = self.add_employee)
-
+        
         # create label 
         self.label2 = tk.Label(text = '\tEmployee Name:', font = 'Courier 10', \
                                                                bg='lightgrey')
@@ -140,13 +140,37 @@ class MyGUI:
         self.reset_button = tk.Button(text='Reset System', font = 'Courier 10', \
                                            command = self.reset_system)
 
-        
-        self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
-        command = self.close_app)
+        self.visit_db = tk.Button(text='Visit DB website', font = 'Courier 10', command = self.open_website_link)
 
         self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file)
+                
+        self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
+        command = self.close_app)
         
-        self.visit_db = tk.Button(text='Visit DB website', font = 'Courier 10', command = self.open_website_link)
+        # when user hovers over button change the button's background color
+        def on_hover(e):
+                e.widget['background'] = 'lightgrey'
+
+        # when user stops hovering over button change the button's background color
+        def on_leave(e):
+                e.widget['background'] = 'SystemButtonFace'           
+        
+        self.my_button1.bind("<Enter>", on_hover)
+        self.my_button1.bind("<Leave>", on_leave)
+        self.my_button2.bind("<Enter>", on_hover)
+        self.my_button2.bind("<Leave>", on_leave)
+        self.my_button3.bind("<Enter>", on_hover)
+        self.my_button3.bind("<Leave>", on_leave)
+        self.my_button4.bind("<Enter>", on_hover)
+        self.my_button4.bind("<Leave>", on_leave)
+        self.reset_button.bind("<Enter>", on_hover)
+        self.reset_button.bind("<Leave>", on_leave)
+        self.visit_db.bind("<Enter>", on_hover)
+        self.visit_db.bind("<Leave>", on_leave)
+        self.load_button.bind("<Enter>", on_hover)
+        self.load_button.bind("<Leave>", on_leave)
+        self.quit_button.bind("<Enter>", on_hover)
+        self.quit_button.bind("<Leave>", on_leave)
         
         # build line between body of app and footer 
         self.canvas2 = tk.Canvas(self.main_window, width=495, height=40, bd=0, \
@@ -394,7 +418,7 @@ class MyGUI:
         # show info message box with data 
         tk.messagebox.showinfo('Info', message)
 
-        self.clear_gui_entry_fields()        
+        self.clear_gui_entry_fields()   
 
     # actions performed to updated an employee's data in the app
     def update_employee(self):
