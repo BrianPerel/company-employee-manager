@@ -10,7 +10,7 @@ GUI Employee Management System using XAMPP and sql-connect module
 import tkinter as tk 
 import tkinter.messagebox as messagebox
 import Employee_Management_System as EMS
-import mysql.connector
+import mysql.connector 
 import subprocess
 import webbrowser
 import pickle
@@ -147,30 +147,22 @@ class MyGUI:
         self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
         command = self.close_app)
         
-        # when user hovers over button change the button's background color
-        def on_hover(e):
-                e.widget['background'] = 'lightgrey'
-
-        # when user stops hovering over button change the button's background color
-        def on_leave(e):
-                e.widget['background'] = 'SystemButtonFace'           
-        
-        self.my_button1.bind("<Enter>", on_hover)
-        self.my_button1.bind("<Leave>", on_leave)
-        self.my_button2.bind("<Enter>", on_hover)
-        self.my_button2.bind("<Leave>", on_leave)
-        self.my_button3.bind("<Enter>", on_hover)
-        self.my_button3.bind("<Leave>", on_leave)
-        self.my_button4.bind("<Enter>", on_hover)
-        self.my_button4.bind("<Leave>", on_leave)
-        self.reset_button.bind("<Enter>", on_hover)
-        self.reset_button.bind("<Leave>", on_leave)
-        self.visit_db.bind("<Enter>", on_hover)
-        self.visit_db.bind("<Leave>", on_leave)
-        self.load_button.bind("<Enter>", on_hover)
-        self.load_button.bind("<Leave>", on_leave)
-        self.quit_button.bind("<Enter>", on_hover)
-        self.quit_button.bind("<Leave>", on_leave)
+        self.my_button1.bind("<Enter>", self.on_hover)
+        self.my_button1.bind("<Leave>", self.on_leave)
+        self.my_button2.bind("<Enter>", self.on_hover)
+        self.my_button2.bind("<Leave>", self.on_leave)
+        self.my_button3.bind("<Enter>", self.on_hover)
+        self.my_button3.bind("<Leave>", self.on_leave)
+        self.my_button4.bind("<Enter>", self.on_hover)
+        self.my_button4.bind("<Leave>", self.on_leave)
+        self.reset_button.bind("<Enter>", self.on_hover)
+        self.reset_button.bind("<Leave>", self.on_leave)
+        self.visit_db.bind("<Enter>", self.on_hover)
+        self.visit_db.bind("<Leave>", self.on_leave)
+        self.load_button.bind("<Enter>", self.on_hover)
+        self.load_button.bind("<Leave>", self.on_leave)
+        self.quit_button.bind("<Enter>", self.on_hover)
+        self.quit_button.bind("<Leave>", self.on_leave)
         
         # build line between body of app and footer 
         self.canvas2 = tk.Canvas(self.main_window, width=495, height=40, bd=0, \
@@ -225,6 +217,7 @@ class MyGUI:
             file_obj = open(DATA_FILE, 'wb')
             file_obj.close()
             
+        # listens for when 'x' exit button is pressed and routes to close_app
         self.main_window.protocol('WM_DELETE_WINDOW', self.close_app)
 
         # statement needed to launch gui window 
@@ -279,8 +272,7 @@ class MyGUI:
         tk.messagebox.showinfo('Employee Info', str(message))
 
         try:
-            sql = 'SELECT * FROM employees WHERE ID = %s'
-            self.mycursor.execute(sql, (ID,))
+            self.mycursor.execute('SELECT * FROM employees WHERE ID = %s', (ID,))
             display_data = self.mycursor.fetchall()
             for data in display_data:
                 print('Displaying current employee ID\'s record: ' + str(data))
@@ -393,16 +385,13 @@ class MyGUI:
             # serialize the object 
             file_obj = open(DATA_FILE, 'ab')
             pickle.dump(new_emp, file_obj)
-            
             file_obj.close()
             
-            # insert data into db table 
-            sql = 'INSERT INTO employees (ID, Name, Deptartment, Title, \
-            Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s)'
-                            
-            val = (ID, name, dept, title, pay_rate, phone_number, work_type)
+            # insert data into db table            
             try:
-                self.mycursor.execute(sql, val)
+                self.mycursor.execute('INSERT INTO employees (ID, Name, Deptartment, Title, \
+            Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s)', 
+            (ID, name, dept, title, pay_rate, phone_number, work_type))
                 self.mydb.commit()
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
@@ -481,10 +470,9 @@ class MyGUI:
 
             check = 'SELECT * FROM employees WHERE ID = %s'
             self.mycursor.execute(check, (ID,)) # execute sql statement with above statement as arg 
-                
-            sql = 'UPDATE employees SET Name=%s, Deptartment=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s'
-            val = (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}')
-            self.mycursor.execute(sql, val)
+
+            self.mycursor.execute('UPDATE employees SET Name=%s, Deptartment=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s',
+                    (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}'))
             self.mydb.commit()
             
             message = 'The new employee has been updated'
@@ -520,8 +508,7 @@ class MyGUI:
         ID = self.output_entry.get()
 
         try:       
-            sql = 'DELETE FROM employees WHERE ID = %s'
-            self.mycursor.execute(sql, (ID,))
+            self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
             self.mydb.commit()
 
         except mysql.connector.Error as err:
@@ -640,6 +627,14 @@ class MyGUI:
         self.radio_var.set(0)
         
         self.output_entry.focus_set()
+        
+    # when user hovers over button change the button's background color
+    def on_hover(self, e):
+            e.widget['background'] = 'lightgrey'
+
+    # when user stops hovering over button change the button's background color
+    def on_leave(self, e):
+            e.widget['background'] = 'SystemButtonFace'    
         
 # start xampp using the subprocess module 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
