@@ -17,7 +17,7 @@ import pickle
 import re, os
 
 class MyGUI: 
-    
+    # print(__doc__)
     def __init__(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas line '''
         self.main_window = tk.Tk() # make the GUI window
@@ -410,7 +410,7 @@ class MyGUI:
 
         # show info message box with data 
         tk.messagebox.showinfo('Info', message)
-
+        
         self.clear_gui_entry_fields()   
 
     # actions performed to updated an employee's data in the app
@@ -612,7 +612,7 @@ class MyGUI:
             tk.messagebox.showinfo('Info', 'File not found\n' + str(err))
             
         self.clear_gui_entry_fields()
-  
+          
     # opens xampp's MySQL module's admin website via direct link
     def open_website_link(self):
         

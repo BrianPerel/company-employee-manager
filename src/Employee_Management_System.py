@@ -1,12 +1,12 @@
 '''
 Author @ Brian Perel
 Employee class, structured to store and return info
-on employees stored in employee dictionary stored in 2nd class 
+on employees stored in employee dictionary stored in GUI.py
 '''
 
 # Employee class (EMPLOYEE MANAGEMENT SYSTEM)
 class Employee:
-    #print(__doc__)
+    # print(__doc__)
     def __init__(self, name, id_number, department, title, pay_rate, phone_number, work_type):
         self.__name = name
         self.__id_number = id_number
@@ -59,11 +59,10 @@ class Employee:
         return self.__work_type 
 
     def __str__(self):
-        result = 'ID number: ' + self.get_id_number() + \
+        return 'ID number: ' + self.get_id_number() + \
                  '\nName: ' + self.get_name() + \
                  '\nDepartment: ' + self.get_department() + \
                  '\nTitle: ' + self.get_title() + \
                  '\nPay rate: $' + self.get_pay_rate() + \
                  '\nPhone number: ' + self.get_phone_number() + \
                  '\nEmployee Type: ' + self.get_work_type()
-        return result
