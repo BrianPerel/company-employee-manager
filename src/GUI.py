@@ -7,14 +7,15 @@ GUI Employee Management System using XAMPP and sql-connect module
 -> Programs requires user to start XAMPP, Apache server and MySQL module 
 '''
 
-import tkinter as tk 
 import tkinter.messagebox as messagebox
 import Employee_Management_System as EMS
+import re as regular_exp
 import mysql.connector 
+import tkinter as tk 
 import subprocess
 import webbrowser
 import pickle
-import re, os
+import os
 
 class MyGUI: 
     # print(__doc__)
@@ -269,7 +270,7 @@ class MyGUI:
         message = self.employees.get(ID) if (ID in self.employees) else 'No employee found of this ID'
 
         # create a showinfo message box 
-        tk.messagebox.showinfo('Employee Info', str(message))
+        messagebox.showinfo('Employee Info', str(message))
 
         try:
             self.mycursor.execute('SELECT * FROM employees WHERE ID = %s', (ID,))
@@ -332,13 +333,13 @@ class MyGUI:
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark 
-        pattern1 = bool(re.match('[a-zA-Z]+', name))
+        pattern1 = bool(regular_exp.match('[a-zA-Z]+', name))
         name_hasdigit = any(item.isdigit() for item in name)
         
-        pattern2 = bool(re.match('[a-zA-Z]+', dept))
+        pattern2 = bool(regular_exp.match('[a-zA-Z]+', dept))
         dept_hasdigit = any(item.isdigit() for item in dept)
         
-        pattern3 = bool(re.match('[a-zA-Z]+', title))
+        pattern3 = bool(regular_exp.match('[a-zA-Z]+', title))
         title_hasdigit = any(item.isdigit() for item in title)
 
         # value of 1 stands for part time radio button option, 2 for full time option 
@@ -350,7 +351,7 @@ class MyGUI:
         # if user provides a pay rate 
         if(len(pay_rate) == 0):          
             # show info message box with data 
-            tk.messagebox.showinfo('Info', 'Could not add employee.')
+            messagebox.showinfo('Info', 'Could not add employee.')
             self.clear_gui_entry_fields()        
             return
 
@@ -409,7 +410,7 @@ class MyGUI:
             message = 'An employee with that ID already exists.'
 
         # show info message box with data 
-        tk.messagebox.showinfo('Info', message)
+        messagebox.showinfo('Info', message)
         
         self.clear_gui_entry_fields()   
 
@@ -456,7 +457,7 @@ class MyGUI:
 
             # create radio buttons: 0 is none selected, 1 is first circle, 2 is second 
             if self.radio_var.get() == 0:
-                tk.messagebox.showinfo('Info', 'Couldn\'t update employees info')
+                messagebox.showinfo('Info', 'Couldn\'t update employees info')
             elif self.radio_var.get() == 1:
                 work_type = 'Part time'
             elif self.radio_var.get() == 2:
@@ -482,7 +483,7 @@ class MyGUI:
         elif ID not in self.employees:
             message = 'No employee found of this ID'
 
-        tk.messagebox.showinfo('Info', message)
+        messagebox.showinfo('Info', message)
 
         self.clear_gui_entry_fields()
 
@@ -521,7 +522,7 @@ class MyGUI:
         else:
             message = 'The specified ID number was not found'
 
-        tk.messagebox.showinfo('Info', message)
+        messagebox.showinfo('Info', message)
         
         self.clear_gui_entry_fields()
 
@@ -555,11 +556,11 @@ class MyGUI:
         try:
             self.mycursor.execute('DROP TABLE employees')
             os.remove(DATA_FILE)
-            tk.messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE[3:] + ' deleted')
+            messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE[3:] + ' deleted')
         except mysql.connector.Error as err:
-            tk.messagebox.showinfo('Info', 'Database not found, file not found\n' + str(err))
+            messagebox.showinfo('Info', 'Database not found, file not found\n' + str(err))
         except FileNotFoundError as err:
-            tk.messagebox.showinfo('Info', 'File not found\n' + str(err))
+            messagebox.showinfo('Info', 'File not found\n' + str(err))
 
         self.clear_gui_entry_fields()
 
@@ -592,7 +593,7 @@ class MyGUI:
         
         try:
             if os.stat(DATA_FILE).st_size == 0:
-                tk.messagebox.showinfo('Info', 'File is empty')
+                messagebox.showinfo('Info', 'File is empty')
 
             else: 
                 file_obj = open(DATA_FILE, 'rb')
@@ -600,7 +601,7 @@ class MyGUI:
 
                 try:
                     while content != ' ':
-                        tk.messagebox.showinfo('Info', content)
+                        messagebox.showinfo('Info', content)
                         content = pickle.load(file_obj)
                         
                     file_obj.close()
@@ -609,7 +610,7 @@ class MyGUI:
                     print('Exception caught: ' + str(err))
             
         except FileNotFoundError as err:
-            tk.messagebox.showinfo('Info', 'File not found\n' + str(err))
+            messagebox.showinfo('Info', 'File not found\n' + str(err))
             
         self.clear_gui_entry_fields()
           
