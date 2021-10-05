@@ -607,7 +607,7 @@ class MyGUI:
                     file_obj.close()
                     
                 except EOFError as err:
-                    print('Exception caught: ' + str(err))
+                    pass
             
         except FileNotFoundError as err:
             messagebox.showinfo('Info', 'File not found\n' + str(err))

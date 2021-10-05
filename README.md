@@ -11,6 +11,6 @@ pyinstaller must be installed in cmd prompt to run
 the following cmd (if not installed use 'pip install pyinstaller')
 pyinstaller --noconsole --onefile GUI.py --icon=res/icon.ico --name App
 
-or alternatively you can run the .bat file, but run it from the windows explorer location of this project
+or alternatively you can delete the build and dist folders + run the .bat file, but run it from the windows explorer location of this project
 
 [Check it out here](https://brianperel.github.io/project2.html)
