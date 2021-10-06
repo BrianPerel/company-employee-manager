@@ -17,12 +17,12 @@ import webbrowser
 import pickle
 import os
 
-class MyGUI: 
+class MyGUI:         
     # print(__doc__)
     def __init__(self):
-        ''' create and place main gui window, buttons, labels, entry's, and a canvas line '''
+        ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
         self.main_window = tk.Tk() # make the GUI window
-        self.main_window.geometry('520x410') # width x height of the GUI window
+        self.main_window.geometry('520x420') # width x height of the GUI window
         self.main_window.configure(background='lightgrey') # app (GUI) background color 
         self.main_window.title('Company') # app title
         self.main_window.resizable(0, 0) # disable resizable option for GUI
@@ -32,16 +32,16 @@ class MyGUI:
                                font = 'Times 12 bold', bg='lightgrey')
 
         # build line between header and body of app 
-        self.canvas = tk.Canvas(self.main_window, width=495, height=40, bd=0, \
+        self.canvas1 = tk.Canvas(self.main_window, width=495, height=40, bd=0, \
                             borderwidth=0, bg='lightgrey', highlightthickness=0.5, \
                             highlightbackground='lightgrey')
 
         # create line between header and body of app 
-        self.canvas.create_line(2, 25, 800, 25)
+        self.canvas1.create_line(2, 25, 800, 25)
                 
         # GUI button 1
         self.my_button1 = tk.Button(text = 'Look Up Employee', \
-                        command = self.look_up_employee, font = 'Courier 10')
+                        command = self.look_up_employee, font = 'Courier 10', borderwidth = 3)
 
         # GUI message displayed in window (Label)
         self.label1 = tk.Label(text = '\tEmployee ID:', font = 'Courier 10', \
@@ -60,7 +60,7 @@ class MyGUI:
         # GUI button
         self.my_button2 = tk.Button(text = 'Add New Employee',
                             font = 'Courier 10', \
-                            command = self.add_employee)
+                            command = self.add_employee, borderwidth = 3)
         
         # create label 
         self.label2 = tk.Label(text = '\tEmployee Name:', font = 'Courier 10', \
@@ -76,7 +76,7 @@ class MyGUI:
         # GUI button (update employee)
         self.my_button3 = tk.Button(text = 'Update Employee', \
                                     font = 'Courier 10', \
-                                    command = self.update_employee)
+                                    command = self.update_employee, borderwidth = 3)
 
         self.label3 = tk.Label(text = '\tEmployee Dept:', font = 'Courier 10', \
                                                        bg='lightgrey')
@@ -91,7 +91,7 @@ class MyGUI:
         # GUI buttons (delete employee) 
         self.my_button4 = tk.Button(text = 'Delete Employee', \
                                         font = 'Courier 10', \
-                                        command = self.delete_employee)
+                                        command = self.delete_employee, borderwidth = 3)
 
         # display formatted label 
         self.label4 = tk.Label(text = '\tEmployee Title:', font = 'Courier 10', \
@@ -139,14 +139,14 @@ class MyGUI:
 
         #GUI formatted buttons, call appropriate method when clicked 
         self.reset_button = tk.Button(text='Reset System', font = 'Courier 10', \
-                                           command = self.reset_system)
+                                           command = self.reset_system, borderwidth = 3)
 
-        self.visit_db = tk.Button(text='Visit DB website', font = 'Courier 10', command = self.open_website_link)
+        self.visit_db = tk.Button(text='Visit DB website', font = 'Courier 10', command = self.open_website_link, borderwidth = 3)
 
-        self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file)
+        self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file, borderwidth = 3)
                 
         self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
-        command = self.close_app)
+        command = self.close_app, borderwidth = 3)
         
         self.my_button1.bind("<Enter>", self.on_hover)
         self.my_button1.bind("<Leave>", self.on_leave)
@@ -184,8 +184,8 @@ class MyGUI:
         self.conn_close = tk.Checkbutton(text='Close MySQL Connection', variable = self.cb_var1, bg='lightgrey')
 
         # make program position and display all gui components (widgets) 
-        self.header.place(x = 120, y = 1)
-        self.canvas.place(x = 10, y = 20)
+        self.header.place(x = 120, y = 2)
+        self.canvas1.place(x = 10, y = 20)
         self.my_button1.place(x = 10, y = 65)
         self.label1.place(x = 203, y = 67)
         self.output_entry.place(x = 380, y = 67)        
@@ -208,8 +208,8 @@ class MyGUI:
         self.visit_db.place(x = 10, y = 265)
         self.load_button.place(x = 10, y = 305)
         self.quit_button.place(x = 110, y = 305)
-        self.canvas2.place(x = 10, y = 335)
-        self.label7.place(x = 160, y = 375)
+        self.canvas2.place(x = 10, y = 340)
+        self.label7.place(x = 160, y = 385)
 
         # create a new file only if file doesn't exist, otherwise don't
         if not os.path.isfile(DATA_FILE):
@@ -334,13 +334,13 @@ class MyGUI:
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark 
         pattern1 = bool(regular_exp.match('[a-zA-Z]+', name))
-        name_hasdigit = any(item.isdigit() for item in name)
+        name_has_digit = any(item.isdigit() for item in name)
         
         pattern2 = bool(regular_exp.match('[a-zA-Z]+', dept))
-        dept_hasdigit = any(item.isdigit() for item in dept)
+        dept_has_digit = any(item.isdigit() for item in dept)
         
         pattern3 = bool(regular_exp.match('[a-zA-Z]+', title))
-        title_hasdigit = any(item.isdigit() for item in title)
+        title_has_digit = any(item.isdigit() for item in title)
 
         # value of 1 stands for part time radio button option, 2 for full time option 
         if self.radio_var.get() == 1:
@@ -375,8 +375,8 @@ class MyGUI:
         if ID not in self.employees and len(phone_number) == 12 and check == True and len(ID) == 6 and name != '' \
            and dept != '' and title != '' and pay_rate != '' \
            and phone_number != '' and work_type != '' and pattern1 == True \
-           and pattern2 == True and pattern3 == True and name_hasdigit == False \
-           and dept_hasdigit == False and title_hasdigit == False:
+           and pattern2 == True and pattern3 == True and name_has_digit == False \
+           and dept_has_digit == False and title_has_digit == False:
             self.employees[ID] = new_emp
             message = 'The new employee has been added'
 
@@ -403,8 +403,8 @@ class MyGUI:
         elif ID == '' or name == '' or dept == '' or title == '' \
              or pay_rate == '' or phone_number == '' or work_type == '' \
              or check == False or len(ID) < 6 or len(ID) > 6 or pattern1 == False \
-             or pattern2 == False or pattern3 == False or name_hasdigit == True \
-             or dept_hasdigit == True or title_hasdigit == True or len(phone_number) != 12:
+             or pattern2 == False or pattern3 == False or name_has_digit == True \
+             or dept_has_digit == True or title_has_digit == True or len(phone_number) != 12:
             message = 'Could not add employee.'
         elif ID in self.employees:
             message = 'An employee with that ID already exists.'
@@ -600,14 +600,14 @@ class MyGUI:
                 content = pickle.load(file_obj)
 
                 try:
-                    while content != ' ':
+                    while content:
                         messagebox.showinfo('Info', content)
                         content = pickle.load(file_obj)
                         
                     file_obj.close()
                     
                 except EOFError as err:
-                    pass
+                    content = []
             
         except FileNotFoundError as err:
             messagebox.showinfo('Info', 'File not found\n' + str(err))
@@ -632,10 +632,12 @@ class MyGUI:
     # when user hovers over button change the button's background color
     def on_hover(self, e):
             e.widget['background'] = 'lightgrey'
+            e.widget['borderwidth'] = 3.8
 
     # when user stops hovering over button change the button's background color
     def on_leave(self, e):
-            e.widget['background'] = 'SystemButtonFace'    
+            e.widget['background'] = 'SystemButtonFace' 
+            e.widget['borderwidth'] = 3   
         
 # start xampp using the subprocess module 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
