@@ -4,12 +4,12 @@ GUI Employee Management System using XAMPP and sql-connect module
 -> Python UI program that will store information about employees in a company using a dictionary with remove, update, loop up operations
 -> Uses an employee class to set and get employee attributes
 
--> Programs requires user to start XAMPP, Apache server and MySQL module 
+-> Programs requires user to start_db_connection XAMPP, Apache server and MySQL module 
 '''
 
+from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
-from tkinter.constants import DISABLED
 import re as regular_exp
 import mysql.connector 
 import tkinter as tk 
@@ -21,6 +21,9 @@ import os
 class MyGUI:         
     # print(__doc__)
     def __init__(self):
+        
+        self.start_db_connection()
+        
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
         self.main_window = tk.Tk() # make the GUI window
         self.main_window.geometry('520x420') # width x height of the GUI window
@@ -225,13 +228,24 @@ class MyGUI:
 
         # statement needed to launch gui window 
         self.main_window.mainloop()
-        
 
-# App operations:
-
+    # App operations:
     
     # create the empty dictionary
     employees = {}
+    
+    def start_db_connection(self):
+        
+        # connect to the database using credentials 
+        try:
+            self.mydb = mysql.connector.connect(
+                host='localhost', user='root', passwd='', database='employee_db')
+
+        # if can't connect to db then db doesn't exist. Just connect to localhost site 
+        except mysql.connector.Error as err:
+            print('Exception caught: ' + str(err))
+            self.mydb = mysql.connector.connect(
+                host='localhost', user='root', passwd='')
 
     # performs actions when closing the app
     def close_app(self):
@@ -248,17 +262,6 @@ class MyGUI:
 
     # actions performed for when looking up an employee
     def look_up_employee(self):
-
-        # connect to the database using credentials 
-        try:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
-
-        # if can't connect to db then db doesn't exist. Just connect to localhost site 
-        except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
 
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -288,16 +291,6 @@ class MyGUI:
     # actions for when adding an employee 
     def add_employee(self, check = True, work_type = ''):
 
-        # connect to the database using credentials 
-        try:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
-
-        except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
-
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
@@ -319,8 +312,6 @@ class MyGUI:
             title = self.output_entry3.get().capitalize().strip()
             pay_rate = self.output_entry4.get().strip()
             phone_number = self.output_entry5.get().strip()  
-            
-             
             
         except ValueError as err:
             print('Exception caught: ' + str(err))
@@ -381,6 +372,10 @@ class MyGUI:
            and dept_has_digit == False and title_has_digit == False:
             self.employees[ID] = new_emp
             message = 'The new employee has been added'
+            
+            # if db exists (at least 1 record has been added to db table) then enable the look up and reset buttons
+            self.reset_button['state'] = NORMAL
+            self.my_button1['state'] = NORMAL
 
             # add a $ to pay_rate before adding it to the table in database 
             pay_rate = pay_rate[:pay_rate.find(pay_rate)] + '$' + pay_rate[pay_rate.find(pay_rate):]
@@ -419,16 +414,6 @@ class MyGUI:
     # actions performed to updated an employee's data in the app
     def update_employee(self, check = True, message = ''):
 
-        # connect to the database using credentials 
-        try:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
-
-        # if db doesn't exist then just connect/login into localhost site 
-        except mysql.connector.Error as err:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
-
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
@@ -463,11 +448,9 @@ class MyGUI:
             elif self.radio_var.get() == 2:
                 work_type = 'Full time'
 
-            new_emp = EMS.Employee(name, ID, dept, \
-                                    title, pay_rate, phone_number, work_type)
-
             # store employee object in employee dictionary, the dictionary's key is the employee's ID 
-            self.employees[ID] = new_emp
+            self.employees[ID] = EMS.Employee(name, ID, dept, \
+                                    title, pay_rate, phone_number, work_type)
 
             check = 'SELECT * FROM employees WHERE ID = %s'
             self.mycursor.execute(check, (ID,)) # execute sql statement with above statement as arg 
@@ -490,23 +473,13 @@ class MyGUI:
     # deletes the employee from the app
     def delete_employee(self):
 
-        # connect to the database using credentials 
-        try:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
-
-        except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
-
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
         
         ''' function to delete an employee from app, by locating it
             by ID in dictionary '''
         # get values from entry box widget 
-        ID = int(self.output_entry.get())
+        ID = self.output_entry.get()
 
         try:       
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
@@ -528,16 +501,6 @@ class MyGUI:
 
     # actions performed to reset the app - deletes app memory, db, and .dat file
     def reset_system(self):
-
-        # connect to the database using credentials 
-        try:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
-
-        except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
 
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -563,21 +526,12 @@ class MyGUI:
             messagebox.showinfo('Info', 'File not found\n' + str(err))
         
         self.reset_button['state'] = DISABLED
+        self.my_button1['state'] = DISABLED
         
         self.clear_gui_entry_fields()
 
     # actions performed for when loading the .dat data file into the app
     def load_file(self):
-        
-        # connect to the database using credentials 
-        try:
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
-
-        except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
-            self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
 
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -631,18 +585,18 @@ class MyGUI:
         
         self.output_entry.focus_set()
         
-    # when user hovers over button change the button's background color
+    # when user hovers over button change the button's background color and border width
     def on_hover(self, e):
             e.widget['background'] = 'lightgrey'
             e.widget['borderwidth'] = 3.8
 
-    # when user stops hovering over button change the button's background color
+    # when user stops hovering over button change the button's background color and border width to default 
     def on_leave(self, e):
             e.widget['background'] = 'SystemButtonFace' 
             e.widget['borderwidth'] = 3   
         
-# start xampp using the subprocess module 
-xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')      
+# start_db_connection xampp using the subprocess module 
+xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')  
     
 # defines the file to save the apps employee profiles to. File can be loaded later
 DATA_FILE = '..\\Employees.dat'
