@@ -7,8 +7,9 @@ GUI Employee Management System using XAMPP and sql-connect module
 -> Programs requires user to start XAMPP, Apache server and MySQL module 
 '''
 
-import tkinter.messagebox as messagebox
 import Employee_Management_System as EMS
+import tkinter.messagebox as messagebox
+from tkinter.constants import DISABLED
 import re as regular_exp
 import mysql.connector 
 import tkinter as tk 
@@ -126,6 +127,7 @@ class MyGUI:
 
         # store input value from app into radio button variable 
         self.radio_var = tk.IntVar()
+        
         # reset radio button variable to option blank (0) 
         self.radio_var.set(0)
 
@@ -148,22 +150,22 @@ class MyGUI:
         self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
         command = self.close_app, borderwidth = 3)
         
-        self.my_button1.bind("<Enter>", self.on_hover)
-        self.my_button1.bind("<Leave>", self.on_leave)
-        self.my_button2.bind("<Enter>", self.on_hover)
-        self.my_button2.bind("<Leave>", self.on_leave)
-        self.my_button3.bind("<Enter>", self.on_hover)
-        self.my_button3.bind("<Leave>", self.on_leave)
-        self.my_button4.bind("<Enter>", self.on_hover)
-        self.my_button4.bind("<Leave>", self.on_leave)
-        self.reset_button.bind("<Enter>", self.on_hover)
-        self.reset_button.bind("<Leave>", self.on_leave)
-        self.visit_db.bind("<Enter>", self.on_hover)
-        self.visit_db.bind("<Leave>", self.on_leave)
-        self.load_button.bind("<Enter>", self.on_hover)
-        self.load_button.bind("<Leave>", self.on_leave)
-        self.quit_button.bind("<Enter>", self.on_hover)
-        self.quit_button.bind("<Leave>", self.on_leave)
+        self.my_button1.bind('<Enter>', self.on_hover)
+        self.my_button1.bind('<Leave>', self.on_leave)
+        self.my_button2.bind('<Enter>', self.on_hover)
+        self.my_button2.bind('<Leave>', self.on_leave)
+        self.my_button3.bind('<Enter>', self.on_hover)
+        self.my_button3.bind('<Leave>', self.on_leave)
+        self.my_button4.bind('<Enter>', self.on_hover)
+        self.my_button4.bind('<Leave>', self.on_leave)
+        self.reset_button.bind('<Enter>', self.on_hover)
+        self.reset_button.bind('<Leave>', self.on_leave)
+        self.visit_db.bind('<Enter>', self.on_hover)
+        self.visit_db.bind('<Leave>', self.on_leave)
+        self.load_button.bind('<Enter>', self.on_hover)
+        self.load_button.bind('<Leave>', self.on_leave)
+        self.quit_button.bind('<Enter>', self.on_hover)
+        self.quit_button.bind('<Leave>', self.on_leave)
         
         # build line between body of app and footer 
         self.canvas2 = tk.Canvas(self.main_window, width=495, height=40, bd=0, \
@@ -284,7 +286,7 @@ class MyGUI:
         self.clear_gui_entry_fields()
             
     # actions for when adding an employee 
-    def add_employee(self):
+    def add_employee(self, check = True, work_type = ''):
 
         # connect to the database using credentials 
         try:
@@ -306,19 +308,19 @@ class MyGUI:
                             Phone_Number VARCHAR(30), \
                             Work_Type VARCHAR(30))')
         
-        ''' function to add an employee to dictionary, by info gathered from GUI '''
-        # get values from entry box widget
-        check = True
-        work_type = ''
-
-        # get all data from gui and assign to dictionary values 
+        ''' function to add an employee to dictionary, by info gathered from GUI '''    
+        
         try:
             ID = self.output_entry.get()
             name = self.output_entry1.get()
-            dept = self.output_entry2.get()
-            title = self.output_entry3.get()
-            pay_rate = self.output_entry4.get()
-            phone_number = self.output_entry5.get()      
+            if ' ' in name:
+                name = name.split(' ', 1)[0].capitalize() + ' ' + name.split(' ', 1)[1].capitalize()
+            dept = self.output_entry2.get().capitalize().strip()
+            title = self.output_entry3.get().capitalize().strip()
+            pay_rate = self.output_entry4.get().strip()
+            phone_number = self.output_entry5.get().strip()  
+            
+             
             
         except ValueError as err:
             print('Exception caught: ' + str(err))
@@ -329,7 +331,7 @@ class MyGUI:
             p1 = phone_number[:3]
             p2 = phone_number[3:6]
             p3 = phone_number[6:10]
-            phone_number = p1 + '-' + p2 + '-' + p3
+            phone_number = '(' + p1 + ')' + '-' + p2 + '-' + p3
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark 
@@ -372,7 +374,7 @@ class MyGUI:
                             Phone_Number VARCHAR(30), Work_Type VARCHAR(30))')
 
         # conditional statement to add employee into dictionary
-        if ID not in self.employees and len(phone_number) == 12 and check == True and len(ID) == 6 and name != '' \
+        if ID not in self.employees and len(phone_number) == 14 and check == True and len(ID) == 6 and name != '' \
            and dept != '' and title != '' and pay_rate != '' \
            and phone_number != '' and work_type != '' and pattern1 == True \
            and pattern2 == True and pattern3 == True and name_has_digit == False \
@@ -404,7 +406,7 @@ class MyGUI:
              or pay_rate == '' or phone_number == '' or work_type == '' \
              or check == False or len(ID) < 6 or len(ID) > 6 or pattern1 == False \
              or pattern2 == False or pattern3 == False or name_has_digit == True \
-             or dept_has_digit == True or title_has_digit == True or len(phone_number) != 12:
+             or dept_has_digit == True or title_has_digit == True or len(phone_number) != 14:
             message = 'Could not add employee.'
         elif ID in self.employees:
             message = 'An employee with that ID already exists.'
@@ -415,7 +417,7 @@ class MyGUI:
         self.clear_gui_entry_fields()   
 
     # actions performed to updated an employee's data in the app
-    def update_employee(self):
+    def update_employee(self, check = True, message = ''):
 
         # connect to the database using credentials 
         try:
@@ -439,12 +441,10 @@ class MyGUI:
         
         ''' function to update an already existing employee's info
             in dictionary, by attaining info from GUI '''
-        message = ''
-        check = True 
         
         # get values from entry box widget
         try:
-            ID = int(self.output_entry.get())
+            ID = self.output_entry.get()
 
         except ValueError as err:
             print('Exception caught: ' + str(err))
@@ -506,7 +506,7 @@ class MyGUI:
         ''' function to delete an employee from app, by locating it
             by ID in dictionary '''
         # get values from entry box widget 
-        ID = self.output_entry.get()
+        ID = int(self.output_entry.get())
 
         try:       
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
@@ -561,7 +561,9 @@ class MyGUI:
             messagebox.showinfo('Info', 'Database not found, file not found\n' + str(err))
         except FileNotFoundError as err:
             messagebox.showinfo('Info', 'File not found\n' + str(err))
-
+        
+        self.reset_button['state'] = DISABLED
+        
         self.clear_gui_entry_fields()
 
     # actions performed for when loading the .dat data file into the app
