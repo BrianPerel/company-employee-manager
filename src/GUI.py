@@ -10,6 +10,7 @@ GUI Employee Management System using XAMPP and sql-connect module
 from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
+from datetime import datetime
 import re as regular_exp
 import mysql.connector 
 import tkinter as tk 
@@ -51,8 +52,18 @@ class MyGUI:
         self.label1 = tk.Label(text = '\tEmployee ID:', font = 'Courier 10', \
                                                                bg='lightgrey')
 
-        # create a StringVar variable to store value input into entry box widget 
+        # create StringVar variables to store value input into entry box widget 
+        self.output_entry_var3 = tk.StringVar()
+        self.output_entry_var4 = tk.StringVar()
+        self.output_entry_var5 = tk.StringVar()
+        self.cb_var1 = tk.StringVar()
         self.output_entry_var = tk.StringVar()
+        self.output_entry_var1 = tk.StringVar()
+        self.output_entry_var2 = tk.StringVar()
+        self.output_entry_var3 = tk.StringVar()
+
+        # (self.cb_var1) = store app input value into check box variable 
+        # value is preselected to be 1 to automatically close the connection
 
         # create an output box (GUI entry)
         self.output_entry = tk.Entry(width = 20, \
@@ -70,9 +81,6 @@ class MyGUI:
         self.label2 = tk.Label(text = '\tEmployee Name:', font = 'Courier 10', \
                                                                bg='lightgrey')
 
-        # create a StringVar variable to store value input into entry box widget 
-        self.output_entry_var1 = tk.StringVar()
-
         # take entry box variable and perform action  
         self.output_entry1 = tk.Entry(width = 20, \
                             textvariable = self.output_entry_var1)
@@ -84,9 +92,6 @@ class MyGUI:
 
         self.label3 = tk.Label(text = '\tEmployee Dept:', font = 'Courier 10', \
                                                        bg='lightgrey')
-        
-        # create a StringVar variable to store value input into entry box widget 
-        self.output_entry_var2 = tk.StringVar()
         
         # take entry box variable and perform action  
         self.output_entry2 = tk.Entry(width = 20, \
@@ -101,9 +106,6 @@ class MyGUI:
         self.label4 = tk.Label(text = '\tEmployee Title:', font = 'Courier 10', \
                                                        bg='lightgrey')
 
-        # create a StringVar variable to store value input into entry box widget 
-        self.output_entry_var3 = tk.StringVar()
-
         # take entry box variable and perform action  
         self.output_entry3 = tk.Entry(width = 20, \
                                     textvariable = self.output_entry_var3)
@@ -112,9 +114,6 @@ class MyGUI:
         self.label5 = tk.Label(text = '\tPay Rate:', font = 'Courier 10', \
                                                         bg='lightgrey')
 
-        # create a StringVar variable to store value input into entry box widget 
-        self.output_entry_var4 = tk.StringVar()
-
         # take entry box variable and perform action  
         self.output_entry4 = tk.Entry(width = 20, \
                                     textvariable = self.output_entry_var4)
@@ -122,8 +121,6 @@ class MyGUI:
         # display formatted label 
         self.label6 = tk.Label(text = '\tPhone Number:', font = 'Courier 10', \
                                                         bg='lightgrey')
-
-        self.output_entry_var5 = tk.StringVar()
 
         self.output_entry5 = tk.Entry(width = 20, \
                                     textvariable = self.output_entry_var5)
@@ -181,10 +178,6 @@ class MyGUI:
         # display formatted label in app 
         self.label7 = tk.Label(text = 'created by Brian Perel', font = 'Courier 10', \
                                                         bg='lightgrey')
-
-        # store app input value into check box variable 
-        # value is preselected to be 1 to automatically close the connection
-        self.cb_var1 = tk.StringVar()
 
         self.conn_close = tk.Checkbutton(text='Close MySQL Connection', variable = self.cb_var1, bg='lightgrey')
 
@@ -295,21 +288,20 @@ class MyGUI:
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30),\
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
                             Work_Type VARCHAR(30))')
         
         ''' function to add an employee to dictionary, by info gathered from GUI '''    
-        
+                
         try:
+            date = str(datetime.now().strftime("%m-%d-%Y %I:%M %p"))
             ID = self.output_entry.get()
-            name = self.output_entry1.get()
-            if ' ' in name:
-                name = name.split(' ', 1)[0].capitalize() + ' ' + name.split(' ', 1)[1].capitalize()
-            dept = self.output_entry2.get().capitalize().strip()
-            title = self.output_entry3.get().capitalize().strip()
+            name = self.output_entry1.get().title().strip()
+            dept = self.output_entry2.get().title().strip()
+            title = self.output_entry3.get().title().strip()
             pay_rate = self.output_entry4.get().strip()
             phone_number = self.output_entry5.get().strip()  
             
@@ -318,11 +310,8 @@ class MyGUI:
             check = False
 
         # if user entered phone number without including dashes, manually attach them 
-        if '-' not in phone_number:
-            p1 = phone_number[:3]
-            p2 = phone_number[3:6]
-            p3 = phone_number[6:10]
-            phone_number = '(' + p1 + ')' + '-' + p2 + '-' + p3
+        if '(' and ')' and '-' not in phone_number:
+            phone_number = '(' + phone_number[:3] + ')' + '-' + phone_number[3:6] + '-' + phone_number[6:10]
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark 
@@ -359,11 +348,6 @@ class MyGUI:
         new_emp = EMS.Employee(
                     name, ID, dept, title, pay_rate, phone_number, work_type)
 
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
-                            Name VARCHAR(30), Deptartment VARCHAR(30), \
-                            Title VARCHAR(30), Pay_Rate VARCHAR(30), \
-                            Phone_Number VARCHAR(30), Work_Type VARCHAR(30))')
-
         # conditional statement to add employee into dictionary
         if ID not in self.employees and len(phone_number) == 14 and check == True and len(ID) == 6 and name != '' \
            and dept != '' and title != '' and pay_rate != '' \
@@ -374,8 +358,7 @@ class MyGUI:
             message = 'The new employee has been added'
             
             # if db exists (at least 1 record has been added to db table) then enable the look up and reset buttons
-            self.reset_button['state'] = NORMAL
-            self.my_button1['state'] = NORMAL
+            self.reset_button['state'] = self.my_button1['state'] = NORMAL
 
             # add a $ to pay_rate before adding it to the table in database 
             pay_rate = pay_rate[:pay_rate.find(pay_rate)] + '$' + pay_rate[pay_rate.find(pay_rate):]
@@ -387,9 +370,9 @@ class MyGUI:
             
             # insert data into db table            
             try:
-                self.mycursor.execute('INSERT INTO employees (ID, Name, Deptartment, Title, \
-            Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s)', 
-            (ID, name, dept, title, pay_rate, phone_number, work_type))
+                self.mycursor.execute('INSERT INTO employees (Employee_Creation_Date, ID, Name, Deptartment, Title, \
+            Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s, %s)', 
+            (date, ID, name, dept, title, pay_rate, phone_number, work_type))
                 self.mydb.commit()
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
@@ -418,7 +401,7 @@ class MyGUI:
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Deptartment VARCHAR(30),\
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
@@ -504,13 +487,6 @@ class MyGUI:
 
         # create the empty databaase and table 
         self.mycursor = self.mydb.cursor(buffered=True)
-        self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
-        self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
-                            Name VARCHAR(30), Deptartment VARCHAR(30),\
-                            Title VARCHAR(30), Pay_Rate VARCHAR(30), \
-                            Phone_Number VARCHAR(30), \
-                            Work_Type VARCHAR(30))')
         
         ''' function to reset app data, in case company leaves.
             This will delete all data in app and database ''' 
@@ -525,24 +501,12 @@ class MyGUI:
         except FileNotFoundError as err:
             messagebox.showinfo('Info', 'File not found\n' + str(err))
         
-        self.reset_button['state'] = DISABLED
-        self.my_button1['state'] = DISABLED
+        self.reset_button['state'] = self.my_button1['state'] = DISABLED
         
         self.clear_gui_entry_fields()
 
     # actions performed for when loading the .dat data file into the app
-    def load_file(self):
-
-        # create the empty databaase and table 
-        self.mycursor = self.mydb.cursor(buffered=True)
-        self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
-        self.mycursor.execute('use employee_db')
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (ID INT PRIMARY KEY, \
-                            Name VARCHAR(30), Deptartment VARCHAR(30),\
-                            Title VARCHAR(30), Pay_Rate VARCHAR(30), \
-                            Phone_Number VARCHAR(30), \
-                            Work_Type VARCHAR(30))')
-        
+    def load_file(self):        
         
         ''' function to load binary file, data is automatically
         saved from the last time app is used '''
@@ -553,11 +517,13 @@ class MyGUI:
 
             else: 
                 file_obj = open(DATA_FILE, 'rb')
+                # 'content' type = <class 'Employee_Management_System.Employee'>
                 content = pickle.load(file_obj)
-
+                
                 try:
-                    while content:
+                    while content != ' ':
                         messagebox.showinfo('Info', content)
+                        print('Name: ' + content.get_name()) 
                         content = pickle.load(file_obj)
                         
                     file_obj.close()
