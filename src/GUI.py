@@ -346,7 +346,7 @@ class MyGUI:
 
         # create instance and send the values 
         new_emp = EMS.Employee(
-                    name, ID, dept, title, pay_rate, phone_number, work_type)
+                    ID, name, dept, title, pay_rate, phone_number, work_type)
 
         # conditional statement to add employee into dictionary
         if ID not in self.employees and len(phone_number) == 14 and check == True and len(ID) == 6 and name != '' \
@@ -358,7 +358,8 @@ class MyGUI:
             message = 'The new employee has been added'
             
             # if db exists (at least 1 record has been added to db table) then enable the look up and reset buttons
-            self.reset_button['state'] = self.my_button1['state'] = NORMAL
+            if self.reset_button['state'] == DISABLED or self.reset_button1['state'] == DISABLED:
+                self.reset_button['state'] = self.my_button1['state'] = NORMAL
 
             # add a $ to pay_rate before adding it to the table in database 
             pay_rate = pay_rate[:pay_rate.find(pay_rate)] + '$' + pay_rate[pay_rate.find(pay_rate):]
@@ -432,7 +433,7 @@ class MyGUI:
                 work_type = 'Full time'
 
             # store employee object in employee dictionary, the dictionary's key is the employee's ID 
-            self.employees[ID] = EMS.Employee(name, ID, dept, \
+            self.employees[ID] = EMS.Employee(ID, name, dept, \
                                     title, pay_rate, phone_number, work_type)
 
             check = 'SELECT * FROM employees WHERE ID = %s'
@@ -517,13 +518,18 @@ class MyGUI:
 
             else: 
                 file_obj = open(DATA_FILE, 'rb')
-                # 'content' type = <class 'Employee_Management_System.Employee'>
                 content = pickle.load(file_obj)
                 
                 try:
                     while content != ' ':
                         messagebox.showinfo('Info', content)
-                        print('Name: ' + content.get_name()) 
+                        
+                        ID = content.get_id_number()
+                        if ID not in self.employees:
+                            self.employees[ID] = EMS.Employee(ID, content.get_name(), content.get_department(),
+                                     content.get_title(), content.get_pay_rate(), 
+                                     content.get_phone_number(), content.get_work_type())
+
                         content = pickle.load(file_obj)
                         
                     file_obj.close()

@@ -7,21 +7,21 @@ on employees stored in employee dictionary stored in GUI.py
 # Employee class (EMPLOYEE MANAGEMENT SYSTEM)
 class Employee:
     # print(__doc__)
-    def __init__(self, name, id_number, department, title, pay_rate, phone_number, work_type):
-        self.__name = name
+    def __init__(self, id_number, name, department, title, pay_rate, phone_number, work_type):
         self.__id_number = id_number
+        self.__name = name
         self.__department = department
         self.__title = title
         self.__pay_rate = pay_rate
         self.__phone_number = phone_number
         self.__work_type = work_type 
-
-    def set_name(self, name):
-        self.__name = name
-
+        
     def set_id_number(self, id_number):
         self.__id_number = id_number
 
+    def set_name(self, name):
+        self.__name = name
+        
     def set_department(self, department):
         self.__department = department
 
@@ -36,12 +36,12 @@ class Employee:
 
     def set_work_type(self, work_type):
         self.__work_type = work_type
-    
-    def get_name(self):
-        return self.__name
         
     def get_id_number(self):
         return self.__id_number
+    
+    def get_name(self):
+        return self.__name
         
     def get_department(self):
         return self.__department
