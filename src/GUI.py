@@ -52,22 +52,24 @@ class MyGUI:
         self.label1 = tk.Label(text = '\tEmployee ID:', font = 'Courier 10', \
                                                                bg='lightgrey')
 
-        # create StringVar variables to store value input into entry box widget 
+        # create StringVar variables to store value input into entry box widget
+        self.output_entry_var = tk.StringVar()
+        self.output_entry_var1 = tk.StringVar()
+        self.output_entry_var2 = tk.StringVar()
+        self.output_entry_var3 = tk.StringVar() 
         self.output_entry_var3 = tk.StringVar()
         self.output_entry_var4 = tk.StringVar()
         self.output_entry_var5 = tk.StringVar()
         self.cb_var1 = tk.StringVar()
-        self.output_entry_var = tk.StringVar()
-        self.output_entry_var1 = tk.StringVar()
-        self.output_entry_var2 = tk.StringVar()
-        self.output_entry_var3 = tk.StringVar()
+    
 
         # (self.cb_var1) = store app input value into check box variable 
         # value is preselected to be 1 to automatically close the connection
 
         # create an output box (GUI entry)
-        self.output_entry = tk.Entry(width = 20, \
-                                textvariable = self.output_entry_var) 
+        self.output_entry = tk.Entry(width = 12, \
+                                textvariable = self.output_entry_var, font = 'Courier', bd = 2,
+                                highlightthickness = 1, highlightcolor = 'black') 
         
         # sets focus on the first text field in app on startup
         self.output_entry.focus_set()
@@ -82,8 +84,9 @@ class MyGUI:
                                                                bg='lightgrey')
 
         # take entry box variable and perform action  
-        self.output_entry1 = tk.Entry(width = 20, \
-                            textvariable = self.output_entry_var1)
+        self.output_entry1 = tk.Entry(width = 12, \
+                            textvariable = self.output_entry_var1, font = 'Courier', bd = 2,
+                                highlightthickness = 1, highlightcolor = 'black') 
 
         # GUI button (update employee)
         self.my_button3 = tk.Button(text = 'Update Employee', \
@@ -94,8 +97,9 @@ class MyGUI:
                                                        bg='lightgrey')
         
         # take entry box variable and perform action  
-        self.output_entry2 = tk.Entry(width = 20, \
-                                textvariable = self.output_entry_var2)
+        self.output_entry2 = tk.Entry(width = 12, \
+                                textvariable = self.output_entry_var2, font = 'Courier', bd = 2,
+                                highlightthickness = 1, highlightcolor = 'black') 
 
         # GUI buttons (delete employee) 
         self.my_button4 = tk.Button(text = 'Delete Employee', \
@@ -107,23 +111,26 @@ class MyGUI:
                                                        bg='lightgrey')
 
         # take entry box variable and perform action  
-        self.output_entry3 = tk.Entry(width = 20, \
-                                    textvariable = self.output_entry_var3)
+        self.output_entry3 = tk.Entry(width = 12, \
+                                textvariable = self.output_entry_var3, font = 'Courier', bd = 2,
+                                highlightthickness = 1, highlightcolor = 'black') 
 
         # display formatted label 
         self.label5 = tk.Label(text = '\tPay Rate:', font = 'Courier 10', \
                                                         bg='lightgrey')
 
         # take entry box variable and perform action  
-        self.output_entry4 = tk.Entry(width = 20, \
-                                    textvariable = self.output_entry_var4)
+        self.output_entry4 = tk.Entry(width = 12, \
+                                textvariable = self.output_entry_var4, font = 'Courier', bd = 2,
+                                highlightthickness = 1, highlightcolor = 'black') 
 
         # display formatted label 
         self.label6 = tk.Label(text = '\tPhone Number:', font = 'Courier 10', \
                                                         bg='lightgrey')
 
-        self.output_entry5 = tk.Entry(width = 20, \
-                                    textvariable = self.output_entry_var5)
+        self.output_entry5 = tk.Entry(width = 12, \
+                                textvariable = self.output_entry_var5, font = 'Courier', bd = 2,
+                                highlightthickness = 1, highlightcolor = 'black') 
 
         # store input value from app into radio button variable 
         self.radio_var = tk.IntVar()
@@ -269,15 +276,6 @@ class MyGUI:
 
         # create a showinfo message box 
         messagebox.showinfo('Employee Info', str(message))
-
-        try:
-            self.mycursor.execute('SELECT * FROM employees WHERE ID = %s', (ID,))
-            display_data = self.mycursor.fetchall()
-            for data in display_data:
-                print('Displaying current employee ID\'s record: ' + str(data))
-
-        except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
             
         self.clear_gui_entry_fields()
             
@@ -333,7 +331,7 @@ class MyGUI:
         # if user provides a pay rate 
         if(len(pay_rate) == 0):          
             # show info message box with data 
-            messagebox.showinfo('Info', 'Could not add employee.')
+            messagebox.showerror('Info', 'Could not add employee.')
             self.clear_gui_entry_fields()        
             return
 
@@ -358,7 +356,7 @@ class MyGUI:
             message = 'The new employee has been added'
             
             # if db exists (at least 1 record has been added to db table) then enable the look up and reset buttons
-            if self.reset_button['state'] == DISABLED or self.reset_button1['state'] == DISABLED:
+            if self.reset_button['state'] == DISABLED or self.my_button1['state'] == DISABLED:
                 self.reset_button['state'] = self.my_button1['state'] = NORMAL
 
             # add a $ to pay_rate before adding it to the table in database 
@@ -496,11 +494,11 @@ class MyGUI:
         try:
             self.mycursor.execute('DROP TABLE employees')
             os.remove(DATA_FILE)
-            messagebox.showinfo('Info', 'System has been reset, table and ' + DATA_FILE[3:] + ' deleted')
+            messagebox.showinfo('Info', 'System has been reset: database table and ' + DATA_FILE[3:] + ' deleted')
         except mysql.connector.Error as err:
-            messagebox.showinfo('Info', 'Database not found, file not found\n' + str(err))
+            messagebox.showerror('Info', 'Database not found, file not found\n' + str(err))
         except FileNotFoundError as err:
-            messagebox.showinfo('Info', 'File not found\n' + str(err))
+            messagebox.showerror('Info', 'File not found\n' + str(err))
         
         self.reset_button['state'] = self.my_button1['state'] = DISABLED
         
@@ -538,7 +536,7 @@ class MyGUI:
                     content = []
             
         except FileNotFoundError as err:
-            messagebox.showinfo('Info', 'File not found\n' + str(err))
+            messagebox.showerror('Info', 'File not found\n' + str(err))
             
         self.clear_gui_entry_fields()
           
