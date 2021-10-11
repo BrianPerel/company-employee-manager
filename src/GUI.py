@@ -67,8 +67,8 @@ class MyGUI:
         # value is preselected to be 1 to automatically close the connection
 
         # create an output box (GUI entry)
-        self.output_entry = tk.Entry(width = 12, \
-                                textvariable = self.output_entry_var, font = 'Courier', bd = 2,
+        self.output_entry = tk.Entry(width = 15, \
+                                textvariable = self.output_entry_var, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
         
         # sets focus on the first text field in app on startup
@@ -84,8 +84,8 @@ class MyGUI:
                                                                bg='lightgrey')
 
         # take entry box variable and perform action  
-        self.output_entry1 = tk.Entry(width = 12, \
-                            textvariable = self.output_entry_var1, font = 'Courier', bd = 2,
+        self.output_entry1 = tk.Entry(width = 15, \
+                            textvariable = self.output_entry_var1, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
 
         # GUI button (update employee)
@@ -97,8 +97,8 @@ class MyGUI:
                                                        bg='lightgrey')
         
         # take entry box variable and perform action  
-        self.output_entry2 = tk.Entry(width = 12, \
-                                textvariable = self.output_entry_var2, font = 'Courier', bd = 2,
+        self.output_entry2 = tk.Entry(width = 15, \
+                                textvariable = self.output_entry_var2, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
 
         # GUI buttons (delete employee) 
@@ -111,8 +111,8 @@ class MyGUI:
                                                        bg='lightgrey')
 
         # take entry box variable and perform action  
-        self.output_entry3 = tk.Entry(width = 12, \
-                                textvariable = self.output_entry_var3, font = 'Courier', bd = 2,
+        self.output_entry3 = tk.Entry(width = 15, \
+                                textvariable = self.output_entry_var3, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
 
         # display formatted label 
@@ -120,16 +120,16 @@ class MyGUI:
                                                         bg='lightgrey')
 
         # take entry box variable and perform action  
-        self.output_entry4 = tk.Entry(width = 12, \
-                                textvariable = self.output_entry_var4, font = 'Courier', bd = 2,
+        self.output_entry4 = tk.Entry(width = 15, \
+                                textvariable = self.output_entry_var4, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
 
         # display formatted label 
         self.label6 = tk.Label(text = '\tPhone Number:', font = 'Courier 10', \
                                                         bg='lightgrey')
 
-        self.output_entry5 = tk.Entry(width = 12, \
-                                textvariable = self.output_entry_var5, font = 'Courier', bd = 2,
+        self.output_entry5 = tk.Entry(width = 15, \
+                                textvariable = self.output_entry_var5, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
 
         # store input value from app into radio button variable 
@@ -483,24 +483,28 @@ class MyGUI:
 
     # actions performed to reset the app - deletes app memory, db, and .dat file
     def reset_system(self):
-
-        # create the empty databaase and table 
-        self.mycursor = self.mydb.cursor(buffered=True)
         
-        ''' function to reset app data, in case company leaves.
-            This will delete all data in app and database ''' 
-        self.employees = {}            
-
-        try:
-            self.mycursor.execute('DROP TABLE employees')
-            os.remove(DATA_FILE)
-            messagebox.showinfo('Info', 'System has been reset: database table and ' + DATA_FILE[3:] + ' deleted')
-        except mysql.connector.Error as err:
-            messagebox.showerror('Info', 'Database not found, file not found\n' + str(err))
-        except FileNotFoundError as err:
-            messagebox.showerror('Info', 'File not found\n' + str(err))
+        var = messagebox.askyesno('Reset System' , 'Are you sure you want to delete everything?')
         
-        self.reset_button['state'] = self.my_button1['state'] = DISABLED
+        if var == 1:
+
+            # create the empty databaase and table 
+            self.mycursor = self.mydb.cursor(buffered=True)
+            
+            ''' function to reset app data, in case company leaves.
+                This will delete all data in app and database ''' 
+            self.employees = {}            
+    
+            try:
+                self.mycursor.execute('DROP TABLE employees')
+                os.remove(DATA_FILE)
+                messagebox.showinfo('Info', 'System has been reset: database table and ' + DATA_FILE[3:] + ' deleted')
+            except mysql.connector.Error as err:
+                messagebox.showerror('Info', 'Database not found, file not found\n' + str(err))
+            except FileNotFoundError as err:
+                messagebox.showerror('Info', 'File not found\n' + str(err))
+            
+            self.reset_button['state'] = self.my_button1['state'] = DISABLED
         
         self.clear_gui_entry_fields()
 
