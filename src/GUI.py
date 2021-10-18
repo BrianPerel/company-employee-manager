@@ -102,8 +102,7 @@ class MyGUI:
                                 highlightthickness = 1, highlightcolor = 'black') 
 
         # GUI buttons (delete employee) 
-        self.my_button4 = tk.Button(text = 'Delete Employee', \
-                                        font = 'Courier 10', \
+        self.my_button4 = tk.Button(text = 'Delete Employee', font = 'Courier 10', \
                                         command = self.delete_employee, borderwidth = 3)
 
         # display formatted label 
@@ -239,13 +238,13 @@ class MyGUI:
         # connect to the database using credentials 
         try:
             self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='', database='employee_db')
+                host='localhost', port=3306, user='root', passwd='', database='employee_db')
 
         # if can't connect to db then db doesn't exist. Just connect to localhost site 
         except mysql.connector.Error as err:
             print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
-                host='localhost', user='root', passwd='')
+                host='localhost', port=3306, user='root', passwd='')
 
     # performs actions when closing the app
     def close_app(self):
