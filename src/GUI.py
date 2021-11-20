@@ -10,6 +10,7 @@ GUI Employee Management System using XAMPP and sql-connect module
 from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
+from tkinter import PhotoImage
 from datetime import datetime
 import re as regular_exp
 import mysql.connector 
@@ -18,6 +19,7 @@ import subprocess
 import webbrowser
 import pickle
 import os
+from _ast import Or
 
 class MyGUI:         
     # print(__doc__)
@@ -28,9 +30,11 @@ class MyGUI:
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
         self.main_window = tk.Tk() # make the GUI window
         self.main_window.geometry('520x420') # width x height of the GUI window
+        self.main_window.iconphoto(True, PhotoImage(file='../res/icon.png'))
         self.main_window.configure(background='lightgrey') # app (GUI) background color 
         self.main_window.title('Company') # app title
         self.main_window.resizable(0, 0) # disable resizable option for GUI
+        self.main_window.eval('tk::PlaceWindow . center') # launches the GUI in the center of the screen
 
         # create a GUI label (display EMPLOYEE MANAGEMENT SYSTEM) = the header of the GUI app
         self.header = tk.Label(text = 'EMPLOYEE MANAGEMENT SYSTEM',
@@ -46,7 +50,7 @@ class MyGUI:
                 
         # GUI button 1
         self.my_button1 = tk.Button(text = 'Look Up Employee', \
-                        command = self.look_up_employee, font = 'Courier 10', borderwidth = 3)
+                        command = self.look_up_employee, font = 'Courier 10', borderwidth = 3, bg = 'SystemButtonFace')
 
         # GUI message displayed in window (Label)
         self.label1 = tk.Label(text = '\tEmployee ID:', font = 'Courier 10', \
@@ -61,7 +65,6 @@ class MyGUI:
         self.output_entry_var4 = tk.StringVar()
         self.output_entry_var5 = tk.StringVar()
         self.cb_var1 = tk.StringVar()
-    
 
         # (self.cb_var1) = store app input value into check box variable 
         # value is preselected to be 1 to automatically close the connection
@@ -70,7 +73,7 @@ class MyGUI:
         self.output_entry = tk.Entry(width = 15, \
                                 textvariable = self.output_entry_var, font = 'Courier 10', bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
-        
+                
         # sets focus on the first text field in app on startup
         self.output_entry.focus_set()
         
@@ -86,7 +89,11 @@ class MyGUI:
         # take entry box variable and perform action  
         self.output_entry1 = tk.Entry(width = 15, \
                             textvariable = self.output_entry_var1, font = 'Courier 10', bd = 2,
-                                highlightthickness = 1, highlightcolor = 'black') 
+                                highlightthickness = 1, highlightcolor = 'black', foreground = 'gray') 
+        
+        self.output_entry1.insert(0, 'Enter name...')
+        self.output_entry1.bind("<Button-1>", self.on_click)
+        self.output_entry1.bind("<FocusIn>", self.on_click)
 
         # GUI button (update employee)
         self.my_button3 = tk.Button(text = 'Update Employee', \
@@ -99,7 +106,11 @@ class MyGUI:
         # take entry box variable and perform action  
         self.output_entry2 = tk.Entry(width = 15, \
                                 textvariable = self.output_entry_var2, font = 'Courier 10', bd = 2,
-                                highlightthickness = 1, highlightcolor = 'black') 
+                                highlightthickness = 1, highlightcolor = 'black', foreground = 'gray') 
+        
+        self.output_entry2.insert(0, 'Enter dept...')
+        self.output_entry2.bind("<Button-1>", self.on_click)
+        self.output_entry2.bind("<FocusIn>", self.on_click)
 
         # GUI buttons (delete employee) 
         self.my_button4 = tk.Button(text = 'Delete Employee', font = 'Courier 10', \
@@ -112,7 +123,11 @@ class MyGUI:
         # take entry box variable and perform action  
         self.output_entry3 = tk.Entry(width = 15, \
                                 textvariable = self.output_entry_var3, font = 'Courier 10', bd = 2,
-                                highlightthickness = 1, highlightcolor = 'black') 
+                                highlightthickness = 1, highlightcolor = 'black', foreground = 'grey') 
+        
+        self.output_entry3.insert(0, 'Enter title...')
+        self.output_entry3.bind("<Button-1>", self.on_click)
+        self.output_entry3.bind("<FocusIn>", self.on_click)
 
         # display formatted label 
         self.label5 = tk.Label(text = '\tPay Rate:', font = 'Courier 10', \
@@ -121,7 +136,11 @@ class MyGUI:
         # take entry box variable and perform action  
         self.output_entry4 = tk.Entry(width = 15, \
                                 textvariable = self.output_entry_var4, font = 'Courier 10', bd = 2,
-                                highlightthickness = 1, highlightcolor = 'black') 
+                                highlightthickness = 1, highlightcolor = 'black', foreground = 'grey') 
+        
+        self.output_entry4.insert(0, 'Enter pay...')
+        self.output_entry4.bind("<Button-1>", self.on_click)
+        self.output_entry4.bind("<FocusIn>", self.on_click)
 
         # display formatted label 
         self.label6 = tk.Label(text = '\tPhone Number:', font = 'Courier 10', \
@@ -129,7 +148,11 @@ class MyGUI:
 
         self.output_entry5 = tk.Entry(width = 15, \
                                 textvariable = self.output_entry_var5, font = 'Courier 10', bd = 2,
-                                highlightthickness = 1, highlightcolor = 'black') 
+                                highlightthickness = 1, highlightcolor = 'black', foreground = 'grey') 
+        
+        self.output_entry5.insert(0, 'Enter phone#...')
+        self.output_entry5.bind("<Button-1>", self.on_click)
+        self.output_entry5.bind("<FocusIn>", self.on_click)
 
         # store input value from app into radio button variable 
         self.radio_var = tk.IntVar()
@@ -233,20 +256,25 @@ class MyGUI:
     # create the empty dictionary
     employees = {}
     
+    '''
+    actions to create and start the db connection
+    '''
     def start_db_connection(self):
         
         # connect to the database using credentials 
         try:
             self.mydb = mysql.connector.connect(
-                host='localhost', port=3306, user='root', passwd='', database='employee_db')
+                host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m', database='employee_db')
 
         # if can't connect to db then db doesn't exist. Just connect to localhost site 
         except mysql.connector.Error as err:
             print('Exception caught: ' + str(err))
             self.mydb = mysql.connector.connect(
-                host='localhost', port=3306, user='root', passwd='')
+                host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m')
 
-    # performs actions when closing the app
+    '''
+    performs actions when closing the app
+    '''
     def close_app(self):
         
         # Value 1 stands for checked check box, if user puts checkmark, we close the db connection to localhost 
@@ -259,14 +287,15 @@ class MyGUI:
         # close gui window            
         self.main_window.destroy()
 
-    # actions performed for when looking up an employee
+    '''
+    actions performed for when looking up an employee
+    '''
     def look_up_employee(self):
 
-        # create the empty databaase and table 
+        # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
     
-        ''' function to look up an employee's info in dictionary,
-        by the ID attained from GUI '''
+        # function to look up an employee's info in dictionary, by the ID attained from GUI 
         # Get an employee ID number to look up.
         ID = self.output_entry.get()
 
@@ -278,10 +307,12 @@ class MyGUI:
             
         self.clear_gui_entry_fields()
             
-    # actions for when adding an employee 
+    '''
+    actions for when adding an employee, add an employee to dictionary, by info gathered from GUI  
+    '''
     def add_employee(self, check = True, work_type = ''):
 
-        # create the empty databaase and table 
+        # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
@@ -290,9 +321,7 @@ class MyGUI:
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
                             Work_Type VARCHAR(30))')
-        
-        ''' function to add an employee to dictionary, by info gathered from GUI '''    
-                
+                        
         try:
             date = str(datetime.now().strftime("%m-%d-%Y %I:%M %p"))
             ID = self.output_entry.get()
@@ -342,8 +371,7 @@ class MyGUI:
         pay_rate = str(format(float(pay_rate), '.2f'))
 
         # create instance and send the values 
-        new_emp = EMS.Employee(
-                    ID, name, dept, title, pay_rate, phone_number, work_type)
+        new_emp = EMS.Employee(ID, name, dept, title, pay_rate, phone_number, work_type)
 
         # conditional statement to add employee into dictionary
         if ID not in self.employees and len(phone_number) == 14 and check == True and len(ID) == 6 and name != '' \
@@ -392,10 +420,13 @@ class MyGUI:
         
         self.clear_gui_entry_fields()   
 
-    # actions performed to updated an employee's data in the app
+    '''
+    actions performed to update an employee's data in the app by attaining info from GUI and 
+    updating an already existing employee's info in the dictionary
+    '''
     def update_employee(self, check = True, message = ''):
 
-        # create the empty databaase and table 
+        # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
@@ -404,10 +435,7 @@ class MyGUI:
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
                             Work_Type VARCHAR(30))')
-        
-        ''' function to update an already existing employee's info
-            in dictionary, by attaining info from GUI '''
-        
+                
         # get values from entry box widget
         try:
             ID = self.output_entry.get()
@@ -451,14 +479,14 @@ class MyGUI:
 
         self.clear_gui_entry_fields()
 
-    # deletes the employee from the app
+    '''
+    deletes the employee from the app by locating it by ID in dictionary 
+    '''
     def delete_employee(self):
 
-        # create the empty databaase and table 
+        # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
-        
-        ''' function to delete an employee from app, by locating it
-            by ID in dictionary '''
+                
         # get values from entry box widget 
         ID = self.output_entry.get()
 
@@ -480,18 +508,19 @@ class MyGUI:
         
         self.clear_gui_entry_fields()
 
-    # actions performed to reset the app - deletes app memory, db, and .dat file
+    '''
+    actions performed to reset the app - deletes app memory, db, and .dat file
+    '''
     def reset_system(self):
         
         var = messagebox.askyesno('Reset System' , 'Are you sure you want to delete everything?')
         
         if var == 1:
 
-            # create the empty databaase and table 
+            # create the empty database and table 
             self.mycursor = self.mydb.cursor(buffered=True)
             
-            ''' function to reset app data, in case company leaves.
-                This will delete all data in app and database ''' 
+            #function to reset app data, in case company leaves. This will delete all data in app and database 
             self.employees = {}            
     
             try:
@@ -507,11 +536,12 @@ class MyGUI:
         
         self.clear_gui_entry_fields()
 
-    # actions performed for when loading the .dat data file into the app
+    '''
+    actions performed for when loading the .dat data file into the app
+    '''
     def load_file(self):        
         
-        ''' function to load binary file, data is automatically
-        saved from the last time app is used '''
+        # function to load binary file, data is automatically saved from the last time app is used 
         
         try:
             if os.stat(DATA_FILE).st_size == 0:
@@ -543,30 +573,49 @@ class MyGUI:
             
         self.clear_gui_entry_fields()
           
-    # opens xampp's MySQL module's admin website via direct link
+    '''
+    opens xampp's MySQL module's admin website via direct link
+    '''
     def open_website_link(self):
         
         webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
-        
+    
+    '''
+    clears all values in the gui text fields, used after clicking a button
+    '''
     def clear_gui_entry_fields(self):
 
         # set all entry widgets to a blank value
-        self.output_entry_var.set(''), self.output_entry_var1.set('')
-        self.output_entry_var2.set(''), self.output_entry_var3.set('')
-        self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0)
+        self.output_entry_var.set(''), self.output_entry_var1.set(''), self.output_entry_var2.set('')
+        self.output_entry_var3.set(''), self.output_entry_var4.set(''), self.output_entry_var5.set('')
+        self.radio_var.set(0), self.output_entry.focus_set()
         
-        self.output_entry.focus_set()
-        
-    # when user hovers over button change the button's background color and border width
+    '''
+    when user hovers over a button, the button's background color and border width are changed to what is specified below
+    '''
     def on_hover(self, e):
-            e.widget['background'] = 'lightgrey'
-            e.widget['borderwidth'] = 3.8
+        e.widget['background'] = 'lightgrey'
+        e.widget['borderwidth'] = 3.8
 
-    # when user stops hovering over button change the button's background color and border width to default 
+    '''
+    when user stops hovers over a button, the button's background color and border width are changed to default values
+    '''   
     def on_leave(self, e):
-            e.widget['background'] = 'SystemButtonFace' 
-            e.widget['borderwidth'] = 3   
+        e.widget['background'] = 'SystemButtonFace' 
+        e.widget['borderwidth'] = 3   
+            
+    '''
+    erases the auto inserted entry box text
+    '''
+    def on_click(self, event):
+        self.output_entry1.config(foreground='black')
+        
+        if self.output_entry1.get() == 'Enter name...' or self.output_entry2.get() == 'Enter dept...' \
+            or self.output_entry3.get() == 'Enter title...' or self.output_entry4.get() == 'Enter pay...' \
+            or self.output_entry5.get() == 'Enter phone#...':
+            event.widget.delete(0, tk.END)
+        else:
+            self.output_entry1.config(foreground='black')
         
 # start_db_connection xampp using the subprocess module 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')  
