@@ -19,7 +19,6 @@ import subprocess
 import webbrowser
 import pickle
 import os
-from _ast import Or
 
 class MyGUI:         
     # print(__doc__)
@@ -46,14 +45,14 @@ class MyGUI:
                             highlightbackground='lightgrey')
 
         # create line between header and body of app 
-        self.canvas1.create_line(2, 25, 800, 25)
+        self.canvas1.create_line(2, 25, 800, 25, width = 2)
                 
         # GUI button 1
         self.my_button1 = tk.Button(text = 'Look Up Employee', \
-                        command = self.look_up_employee, font = 'Courier 10', borderwidth = 3, bg = 'SystemButtonFace')
+                        command = self.look_up_employee, font = ('Courier', 10), borderwidth = 3, bg = 'SystemButtonFace')
 
         # GUI message displayed in window (Label)
-        self.label1 = tk.Label(text = '\tEmployee ID:', font = 'Courier 10', \
+        self.label1 = tk.Label(text = '\tEmployee ID:', font = ('Courier', 10), \
                                                                bg='lightgrey')
 
         # create StringVar variables to store value input into entry box widget
@@ -71,7 +70,7 @@ class MyGUI:
 
         # create an output box (GUI entry)
         self.output_entry = tk.Entry(width = 15, \
-                                textvariable = self.output_entry_var, font = 'Courier 10', bd = 2,
+                                textvariable = self.output_entry_var, font = ('Courier', 10), bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black') 
                 
         # sets focus on the first text field in app on startup
@@ -79,16 +78,16 @@ class MyGUI:
         
         # GUI button
         self.my_button2 = tk.Button(text = 'Add New Employee',
-                            font = 'Courier 10', \
+                            font = ('Courier', 10), \
                             command = self.add_employee, borderwidth = 3)
         
         # create label 
-        self.label2 = tk.Label(text = '\tEmployee Name:', font = 'Courier 10', \
+        self.label2 = tk.Label(text = '\tEmployee Name:', font = ('Courier', 10), \
                                                                bg='lightgrey')
 
         # take entry box variable and perform action  
         self.output_entry1 = tk.Entry(width = 15, \
-                            textvariable = self.output_entry_var1, font = 'Courier 10', bd = 2,
+                            textvariable = self.output_entry_var1, font = ('Courier', 10), bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black', foreground = 'gray') 
         
         self.output_entry1.insert(0, 'Enter name...')
@@ -97,15 +96,15 @@ class MyGUI:
 
         # GUI button (update employee)
         self.my_button3 = tk.Button(text = 'Update Employee', \
-                                    font = 'Courier 10', \
+                                    font = ('Courier', 10), \
                                     command = self.update_employee, borderwidth = 3)
 
-        self.label3 = tk.Label(text = '\tEmployee Dept:', font = 'Courier 10', \
+        self.label3 = tk.Label(text = '\tEmployee Dept:', font = ('Courier', 10), \
                                                        bg='lightgrey')
         
         # take entry box variable and perform action  
         self.output_entry2 = tk.Entry(width = 15, \
-                                textvariable = self.output_entry_var2, font = 'Courier 10', bd = 2,
+                                textvariable = self.output_entry_var2, font = ('Courier', 10), bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black', foreground = 'gray') 
         
         self.output_entry2.insert(0, 'Enter dept...')
@@ -113,16 +112,16 @@ class MyGUI:
         self.output_entry2.bind("<FocusIn>", self.on_click)
 
         # GUI buttons (delete employee) 
-        self.my_button4 = tk.Button(text = 'Delete Employee', font = 'Courier 10', \
+        self.my_button4 = tk.Button(text = 'Delete Employee', font = ('Courier', 10), \
                                         command = self.delete_employee, borderwidth = 3)
 
         # display formatted label 
-        self.label4 = tk.Label(text = '\tEmployee Title:', font = 'Courier 10', \
+        self.label4 = tk.Label(text = '\tEmployee Title:', font = ('Courier', 10), \
                                                        bg='lightgrey')
 
         # take entry box variable and perform action  
         self.output_entry3 = tk.Entry(width = 15, \
-                                textvariable = self.output_entry_var3, font = 'Courier 10', bd = 2,
+                                textvariable = self.output_entry_var3, font = ('Courier', 10), bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black', foreground = 'grey') 
         
         self.output_entry3.insert(0, 'Enter title...')
@@ -130,12 +129,12 @@ class MyGUI:
         self.output_entry3.bind("<FocusIn>", self.on_click)
 
         # display formatted label 
-        self.label5 = tk.Label(text = '\tPay Rate:', font = 'Courier 10', \
+        self.label5 = tk.Label(text = '\tPay Rate:', font = ('Courier', 10), \
                                                         bg='lightgrey')
 
         # take entry box variable and perform action  
         self.output_entry4 = tk.Entry(width = 15, \
-                                textvariable = self.output_entry_var4, font = 'Courier 10', bd = 2,
+                                textvariable = self.output_entry_var4, font = ('Courier', 10), bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black', foreground = 'grey') 
         
         self.output_entry4.insert(0, 'Enter pay...')
@@ -143,11 +142,11 @@ class MyGUI:
         self.output_entry4.bind("<FocusIn>", self.on_click)
 
         # display formatted label 
-        self.label6 = tk.Label(text = '\tPhone Number:', font = 'Courier 10', \
+        self.label6 = tk.Label(text = '\tPhone Number:', font = ('Courier', 10), \
                                                         bg='lightgrey')
 
         self.output_entry5 = tk.Entry(width = 15, \
-                                textvariable = self.output_entry_var5, font = 'Courier 10', bd = 2,
+                                textvariable = self.output_entry_var5, font = ('Courier', 10), bd = 2,
                                 highlightthickness = 1, highlightcolor = 'black', foreground = 'grey') 
         
         self.output_entry5.insert(0, 'Enter phone#...')
@@ -169,14 +168,14 @@ class MyGUI:
                                     bg='lightgrey', value=2)
 
         #GUI formatted buttons, call appropriate method when clicked 
-        self.reset_button = tk.Button(text='Reset System', font = 'Courier 10', \
+        self.reset_button = tk.Button(text='Reset System', font = ('Courier', 10), \
                                            command = self.reset_system, borderwidth = 3)
 
-        self.visit_db = tk.Button(text='Visit DB website', font = 'Courier 10', command = self.open_website_link, borderwidth = 3)
+        self.visit_db = tk.Button(text='Visit DB website', font = ('Courier', 10), command = self.open_website_link, borderwidth = 3)
 
-        self.load_button = tk.Button(text='Load File', font = 'Courier 10', command = self.load_file, borderwidth = 3)
+        self.load_button = tk.Button(text='Load File', font = ('Courier', 10), command = self.load_file, borderwidth = 3)
                 
-        self.quit_button = tk.Button(text='Quit Program', font = 'Courier 10',
+        self.quit_button = tk.Button(text='Quit Program', font = ('Courier', 10),
         command = self.close_app, borderwidth = 3)
         
         self.my_button1.bind('<Enter>', self.on_hover)
@@ -202,10 +201,10 @@ class MyGUI:
                             highlightbackground='lightgrey')
 
         # create line between body of app and footer 
-        self.canvas2.create_line(2, 25, 600, 25)
+        self.canvas2.create_line(2, 25, 600, 25, width = 2)
 
         # display formatted label in app 
-        self.label7 = tk.Label(text = 'created by Brian Perel', font = 'Courier 10', \
+        self.label7 = tk.Label(text = 'created by Brian Perel', font = ('Courier', 10), \
                                                         bg='lightgrey')
 
         self.conn_close = tk.Checkbutton(text='Close MySQL Connection', variable = self.cb_var1, bg='lightgrey')
@@ -303,7 +302,7 @@ class MyGUI:
         message = self.employees.get(ID) if (ID in self.employees) else 'No employee found of this ID'
 
         # create a showinfo message box 
-        messagebox.showinfo('Employee Info', str(message))
+        messagebox.showinfo(title = 'Employee Info', message = str(message))
             
         self.clear_gui_entry_fields()
             
@@ -334,6 +333,13 @@ class MyGUI:
         except ValueError as err:
             print('Exception caught: ' + str(err))
             check = False
+         
+        if name == 'Enter name...' or dept == 'Enter dept...' or title == 'Enter title...' \
+        or pay_rate == 'Enter pay...' or phone_number == 'Enter phone#...': 
+            messagebox.showerror(title = 'Info', message = 'Could not add employee.')
+            self.clear_gui_entry_fields()        
+            return 
+
 
         # if user entered phone number without including dashes, manually attach them 
         if '(' and ')' and '-' not in phone_number:
@@ -349,7 +355,7 @@ class MyGUI:
         
         pattern3 = bool(regular_exp.match('[a-zA-Z]+', title))
         title_has_digit = any(item.isdigit() for item in title)
-
+        
         # value of 1 stands for part time radio button option, 2 for full time option 
         if self.radio_var.get() == 1:
             work_type = 'Part time'
@@ -359,16 +365,23 @@ class MyGUI:
         # if user provides a pay rate 
         if(len(pay_rate) == 0):          
             # show info message box with data 
-            messagebox.showerror('Info', 'Could not add employee.')
+            messagebox.showerror(title = 'Info', message = 'Could not add employee.')
             self.clear_gui_entry_fields()        
             return
 
         # if user entered $ in pay_rate, remove it to enable casting to float which we do to format the number 
         if('$' in pay_rate):
             pay_rate = pay_rate.replace('$', '')
+            
+        pay_rate_has_letters = any(item.isalpha() for item in pay_rate)
 
         # cast to float and format number, cast pay_rate back to string 
-        pay_rate = str(format(float(pay_rate), '.2f'))
+        if pay_rate_has_letters == False: 
+            pay_rate = str(format(float(pay_rate), '.2f'))
+        else:
+            messagebox.showerror(title = 'Info', message = 'Could not add employee.')
+            self.clear_gui_entry_fields()        
+            return
 
         # create instance and send the values 
         new_emp = EMS.Employee(ID, name, dept, title, pay_rate, phone_number, work_type)
@@ -416,7 +429,7 @@ class MyGUI:
             message = 'An employee with that ID already exists.'
 
         # show info message box with data 
-        messagebox.showinfo('Info', message)
+        messagebox.showinfo(title = 'Info', message = message)
         
         self.clear_gui_entry_fields()   
 
@@ -451,7 +464,7 @@ class MyGUI:
 
             # create radio buttons: 0 is none selected, 1 is first circle, 2 is second 
             if self.radio_var.get() == 0:
-                messagebox.showinfo('Info', 'Couldn\'t update employees info')
+                messagebox.showinfo(title = 'Info', message = 'Couldn\'t update employees info')
             elif self.radio_var.get() == 1:
                 work_type = 'Part time'
             elif self.radio_var.get() == 2:
@@ -475,7 +488,7 @@ class MyGUI:
         elif ID not in self.employees:
             message = 'No employee found of this ID'
 
-        messagebox.showinfo('Info', message)
+        messagebox.showinfo(title = 'Info', message = message)
 
         self.clear_gui_entry_fields()
 
@@ -504,7 +517,7 @@ class MyGUI:
         else:
             message = 'The specified ID number was not found'
 
-        messagebox.showinfo('Info', message)
+        messagebox.showinfo(title = 'Info', message = message)
         
         self.clear_gui_entry_fields()
 
@@ -513,9 +526,9 @@ class MyGUI:
     '''
     def reset_system(self):
         
-        var = messagebox.askyesno('Reset System' , 'Are you sure you want to delete everything?')
+        var = messagebox.askquestion(title = 'Reset System' , message = 'Are you sure you want to delete everything?')
         
-        if var == 1:
+        if var == 'yes':
 
             # create the empty database and table 
             self.mycursor = self.mydb.cursor(buffered=True)
@@ -526,11 +539,11 @@ class MyGUI:
             try:
                 self.mycursor.execute('DROP TABLE employees')
                 os.remove(DATA_FILE)
-                messagebox.showinfo('Info', 'System has been reset: database table and ' + DATA_FILE[3:] + ' deleted')
+                messagebox.showinfo(title = 'Info', message = 'System has been reset: database table and ' + DATA_FILE[3:] + ' deleted')
             except mysql.connector.Error as err:
-                messagebox.showerror('Info', 'Database not found, file not found\n' + str(err))
+                messagebox.showerror(title = 'Info', message = 'Database not found, file not found\n' + str(err))
             except FileNotFoundError as err:
-                messagebox.showerror('Info', 'File not found\n' + str(err))
+                messagebox.showerror(title = 'Info', message = 'File not found\n' + str(err))
             
             self.reset_button['state'] = self.my_button1['state'] = DISABLED
         
@@ -545,7 +558,7 @@ class MyGUI:
         
         try:
             if os.stat(DATA_FILE).st_size == 0:
-                messagebox.showinfo('Info', 'File is empty')
+                messagebox.showinfo(title = 'Info', message = 'File is empty')
 
             else: 
                 file_obj = open(DATA_FILE, 'rb')
@@ -553,7 +566,7 @@ class MyGUI:
                 
                 try:
                     while content != ' ':
-                        messagebox.showinfo('Info', content)
+                        messagebox.showinfo(title = 'Info', message = content)
                         
                         ID = content.get_id_number()
                         if ID not in self.employees:
@@ -569,7 +582,7 @@ class MyGUI:
                     content = []
             
         except FileNotFoundError as err:
-            messagebox.showerror('Info', 'File not found\n' + str(err))
+            messagebox.showerror(title = 'Info', message = 'File not found\n' + str(err))
             
         self.clear_gui_entry_fields()
           
@@ -584,11 +597,15 @@ class MyGUI:
     clears all values in the gui text fields, used after clicking a button
     '''
     def clear_gui_entry_fields(self):
+        
+        self.output_entry1.config(foreground = 'grey'), self.output_entry2.config(foreground = 'grey'),
+        self.output_entry3.config(foreground = 'grey'), self.output_entry4.config(foreground = 'grey'),
+        self.output_entry5.config(foreground = 'grey')
 
         # set all entry widgets to a blank value
-        self.output_entry_var.set(''), self.output_entry_var1.set(''), self.output_entry_var2.set('')
-        self.output_entry_var3.set(''), self.output_entry_var4.set(''), self.output_entry_var5.set('')
-        self.radio_var.set(0), self.output_entry.focus_set()
+        self.output_entry_var.set(''), self.output_entry_var1.set('Enter name...'), self.output_entry_var2.set('Enter dept...'),
+        self.output_entry_var3.set('Enter title...'), self.output_entry_var4.set('Enter pay...'),
+        self.output_entry_var5.set('Enter phone#...'), self.radio_var.set(0), self.output_entry.focus_set()
         
     '''
     when user hovers over a button, the button's background color and border width are changed to what is specified below
@@ -605,17 +622,27 @@ class MyGUI:
         e.widget['borderwidth'] = 3   
             
     '''
-    erases the auto inserted entry box text
+    erases the auto inserted GUI startup entry box text
     '''
     def on_click(self, event):
-        self.output_entry1.config(foreground='black')
+        # sets the entry box's text to be black and deletes existing text 
         
-        if self.output_entry1.get() == 'Enter name...' or self.output_entry2.get() == 'Enter dept...' \
-            or self.output_entry3.get() == 'Enter title...' or self.output_entry4.get() == 'Enter pay...' \
-            or self.output_entry5.get() == 'Enter phone#...':
-            event.widget.delete(0, tk.END)
-        else:
-            self.output_entry1.config(foreground='black')
+        event.widget.config(foreground='black')
+        
+        if event.widget.get() == 'Enter name...':
+            event.widget.delete(0, tk.END)  
+            
+        elif event.widget.get() == 'Enter dept...':
+            event.widget.delete(0, tk.END)   
+            
+        elif event.widget.get() == 'Enter title...':
+            event.widget.delete(0, tk.END)      
+            
+        elif event.widget.get() == 'Enter pay...':
+            event.widget.delete(0, tk.END)  
+            
+        elif event.widget.get() == 'Enter phone#...':
+            event.widget.delete(0, tk.END)      
         
 # start_db_connection xampp using the subprocess module 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')  
