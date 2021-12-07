@@ -264,7 +264,8 @@ class MyGUI:
         
         try:
             self.mydb = mysql.connector.connect(
-                host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m')
+             #   host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m')
+            host='localhost', port=3306, user='root')
 
         except mysql.connector.Error as err:
             print('Exception caught: ' + str(err))
@@ -313,10 +314,9 @@ class MyGUI:
     actions for when adding an employee, add an employee to dictionary, by info gathered from GUI  
     '''
     def add_employee(self, check = True, work_type = ''):
-
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT PRIMARY KEY, \
-                            Name VARCHAR(30), Deptartment VARCHAR(30), \
+                            Name VARCHAR(30), Department VARCHAR(30), \
                             Title VARCHAR(30), Pay_Rate VARCHAR(30), \
                             Phone_Number VARCHAR(30), \
                             Work_Type VARCHAR(30))')
@@ -341,8 +341,11 @@ class MyGUI:
             return 
 
         # if user entered phone number without including dashes, manually attach them 
-        if '(' and ')' and '-' not in phone_number:
-            phone_number = '(' + phone_number[:3] + ')' + '-' + phone_number[3:6] + '-' + phone_number[6:10]
+        if '(' or ')' not in phone_number:
+            phone_number = '(' + phone_number[:3] + ')' + phone_number[3:]
+            
+        if '-' not in phone_number:
+            phone_number = phone_number[:5] + '-' + phone_number[5:8] + '-' + phone_number[8:]
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark 
@@ -367,7 +370,7 @@ class MyGUI:
             messagebox.showerror(title = 'Info', message = 'Could not add employee.')
             self.clear_gui_entry_fields()        
             return
-
+        
         # if user entered $ in pay_rate, remove it to enable casting to float which we do to format the number 
         if('$' in pay_rate):
             pay_rate = pay_rate.replace('$', '')
@@ -375,7 +378,7 @@ class MyGUI:
         pay_rate_has_letters = any(item.isalpha() for item in pay_rate)
 
         # cast to float and format number, cast pay_rate back to string 
-        if pay_rate_has_letters == False: 
+        if not pay_rate_has_letters: 
             pay_rate = str(format(float(pay_rate), '.2f'))
         else:
             messagebox.showerror(title = 'Info', message = 'Could not add employee.')
@@ -386,11 +389,11 @@ class MyGUI:
         new_emp = EMS.Employee(ID, name, dept, title, pay_rate, phone_number, work_type)
 
         # conditional statement to add employee into dictionary
-        if ID not in self.employees and len(phone_number) == 14 and check == True and len(ID) == 6 and name != '' \
+        if ID not in self.employees and len(phone_number) == 14 and check and len(ID) == 6 and name != '' \
            and dept != '' and title != '' and pay_rate != '' \
-           and phone_number != '' and work_type != '' and pattern1 == True \
-           and pattern2 == True and pattern3 == True and name_has_digit == False \
-           and dept_has_digit == False and title_has_digit == False:
+           and phone_number != '' and work_type != '' and pattern1 \
+           and pattern2 and pattern3 and not name_has_digit \
+           and not dept_has_digit and not title_has_digit:
             self.employees[ID] = new_emp
             message = 'The new employee has been added'
             
@@ -420,9 +423,9 @@ class MyGUI:
         # input validation: make sure no fields are blank  
         elif ID == '' or name == '' or dept == '' or title == '' \
              or pay_rate == '' or phone_number == '' or work_type == '' \
-             or check == False or len(ID) < 6 or len(ID) > 6 or pattern1 == False \
-             or pattern2 == False or pattern3 == False or name_has_digit == True \
-             or dept_has_digit == True or title_has_digit == True or len(phone_number) != 14:
+             or not check or len(ID) < 6 or len(ID) > 6 or not pattern1 \
+             or not pattern2 or not pattern3 or name_has_digit \
+             or dept_has_digit or title_has_digit or len(phone_number) != 14:
             message = 'Could not add employee.'
         elif ID in self.employees:
             message = 'An employee with that ID already exists.'
@@ -474,13 +477,12 @@ class MyGUI:
             check = 'SELECT * FROM employees WHERE ID = %s'
             self.mycursor.execute(check, (ID,)) # execute sql statement with above statement as arg 
 
-            self.mycursor.execute('UPDATE employees SET Name=%s, Deptartment=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s',
+            self.mycursor.execute('UPDATE employees SET Name=%s, Department=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s',
                     (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}'))
             self.mydb.commit()
             
             message = 'The new employee has been updated'
-
-        elif check == False:
+        elif not check:
             message = 'Couldn\'t update employees info.'
         elif ID not in self.employees:
             message = 'No employee found of this ID'
