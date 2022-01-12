@@ -1,4 +1,4 @@
-### Company-employee-program
+### company-employee-program
 - About: Python program that will store information about employees in a company using a dictionary. 
 
 - NOTE: The app will require you to have xampp installed on your machine under the path 'C:\xampp'. 
