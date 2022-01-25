@@ -1,7 +1,7 @@
 @echo off
 
 ::
-:: converts the python src code files to an exe (NOTE: RUN THIS BATCH FILE FROM THE WINDOWS EXPLORER FOLDER)
+:: converts the python src code files to an exe (NOTE: RUN THIS BATCH FILE FROM THE WINDOWS EXPLORER FOLDER, otherwise the exe may be created an a different location)
 ::
 
 echo creating Employee_Manager.exe...

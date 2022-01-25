@@ -239,8 +239,7 @@ class MyGUI:
 
         # create a new file only if file doesn't exist, otherwise don't
         if not os.path.isfile(DATA_FILE):
-            # create a new binary file to store binary object info, if one doesn't
-            # already exist in folder 
+            # create a new binary file to store binary object info, if one doesn't already exist in folder 
             file_obj = open(DATA_FILE, 'wb')
             file_obj.close()
             
@@ -263,8 +262,8 @@ class MyGUI:
         # connect to the database using credentials 
         
         try:
+            #   host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m')
             self.mydb = mysql.connector.connect(
-             #   host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m')
             host='localhost', port=3306, user='root')
 
         except mysql.connector.Error as err:
@@ -363,7 +362,7 @@ class MyGUI:
             work_type = 'Part time'
         elif self.radio_var.get() == 2:
             work_type = 'Full time'
-
+        
         # if user provides a pay rate 
         if(len(pay_rate) == 0):          
             # show info message box with data 
@@ -420,10 +419,10 @@ class MyGUI:
                 self.clear_gui_entry_fields()
                 print('Exception caught: ' + str(err)) 
         
-        # input validation: make sure no fields are blank  
+        # input validation: make sure no fields are blank and input of proper lengths is given
         elif ID == '' or name == '' or dept == '' or title == '' \
              or pay_rate == '' or phone_number == '' or work_type == '' \
-             or not check or len(ID) < 6 or len(ID) > 6 or not pattern1 \
+             or not check or len(ID) != 6 or not pattern1 \
              or not pattern2 or not pattern3 or name_has_digit \
              or dept_has_digit or title_has_digit or len(phone_number) != 14:
             message = 'Could not add employee.'
@@ -515,7 +514,7 @@ class MyGUI:
             message = 'Employee information deleted'
         else:
             message = 'The specified ID number was not found'
-
+            
         messagebox.showinfo(title = 'Info', message = message)
         
         self.clear_gui_entry_fields()
@@ -524,10 +523,8 @@ class MyGUI:
     actions performed to reset the app - deletes app memory, db, and .dat file
     '''
     def reset_system(self):
-        
-        var = messagebox.askquestion(title = 'Reset System' , message = 'Are you sure you want to delete everything?')
-        
-        if var == 'yes':
+                
+        if messagebox.askquestion(title = 'Reset System' , message = 'Are you sure you want to delete everything?') == 'yes':
             self.mycursor = self.mydb.cursor(buffered=True)
             
             # function to reset app data, in case company leaves. This will delete all data in app and the whole database 
