@@ -49,7 +49,7 @@ class MyGUI:
                 
         # GUI button 1
         self.my_button1 = tk.Button(text = 'Look Up Employee', 
-                        command = self.look_up_employee, font = ('Courier', 10), borderwidth = 3, bg = 'SystemButtonFace')
+                        command = self.look_up_employee, font = ('Courier', 10), borderwidth = 3, bg = 'SystemButtonFace', cursor="hand2")
 
         # GUI message displayed in window (Label)
         self.label1 = tk.Label(text = '\tEmployee ID:', font = ('Courier', 10), 
@@ -79,7 +79,7 @@ class MyGUI:
         # GUI button
         self.my_button2 = tk.Button(text = 'Add New Employee',
                             font = ('Courier', 10), 
-                            command = self.add_employee, borderwidth = 3)
+                            command = self.add_employee, borderwidth = 3, cursor="hand2")
         
         # create label 
         self.label2 = tk.Label(text = '\tEmployee Name:', font = ('Courier', 10), 
@@ -97,7 +97,7 @@ class MyGUI:
         # GUI button (update employee)
         self.my_button3 = tk.Button(text = 'Update Employee', 
                                     font = ('Courier', 10), 
-                                    command = self.update_employee, borderwidth = 3)
+                                    command = self.update_employee, borderwidth = 3, cursor="hand2")
 
         self.label3 = tk.Label(text = '\tEmployee Dept:', font = ('Courier', 10), 
                                                        bg='lightgrey')
@@ -113,7 +113,7 @@ class MyGUI:
 
         # GUI buttons (delete employee) 
         self.my_button4 = tk.Button(text = 'Delete Employee', font = ('Courier', 10), 
-                                        command = self.delete_employee, borderwidth = 3)
+                                        command = self.delete_employee, borderwidth = 3, cursor="hand2")
 
         # display formatted label 
         self.label4 = tk.Label(text = '\tEmployee Title:', font = ('Courier', 10), 
@@ -127,6 +127,10 @@ class MyGUI:
         self.output_entry3.insert(0, 'Enter title...')
         self.output_entry3.bind("<Button-1>", self.on_click)
         self.output_entry3.bind("<FocusIn>", self.on_click)
+        
+        # GUI formatted buttons, call appropriate method when clicked 
+        self.reset_button = tk.Button(text='Reset System', font = ('Courier', 10),
+                                           command = self.reset_system, borderwidth = 3, cursor="hand2")
 
         # display formatted label 
         self.label5 = tk.Label(text = '\tPay Rate:', font = ('Courier', 10), bg = 'lightgrey')
@@ -139,6 +143,11 @@ class MyGUI:
         self.output_entry4.insert(0, 'Enter pay...')
         self.output_entry4.bind("<Button-1>", self.on_click)
         self.output_entry4.bind("<FocusIn>", self.on_click)
+        
+        # Opens xampp's MySQL module's admin website via direct link
+        self.visit_db = tk.Button(text='Visit DB website', font = ('Courier', 10), 
+            command = lambda: webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1), 
+            borderwidth = 3, cursor="hand2")
 
         # display formatted label 
         self.label6 = tk.Label(text = '\tPhone Number:', font = ('Courier', 10), bg = 'lightgrey')
@@ -156,28 +165,19 @@ class MyGUI:
         
         # reset radio button variable to option blank (0) 
         self.radio_var.set(0)
+        
+        self.load_button = tk.Button(text='Load File', font = ('Courier', 10), command = self.load_file, borderwidth = 3, cursor="hand2")
+                
+        self.quit_button = tk.Button(text='Quit Program', font = ('Courier', 10),
+        command = self.close_app, borderwidth = 3, cursor="hand2")
 
         # create radio button
         self.rb1 = tk.Radiobutton(text='Part Time Employee', variable=self.radio_var,
-                                    bg='lightgrey', value=1)
+                                    bg='lightgrey', value=1, cursor="hand2")
 
         # create radio button 
         self.rb2 = tk.Radiobutton(text='Full Time Employee', variable=self.radio_var,
-                                    bg='lightgrey', value=2)
-
-        # GUI formatted buttons, call appropriate method when clicked 
-        self.reset_button = tk.Button(text='Reset System', font = ('Courier', 10),
-                                           command = self.reset_system, borderwidth = 3)
-
-        # Opens xampp's MySQL module's admin website via direct link
-        self.visit_db = tk.Button(text='Visit DB website', font = ('Courier', 10), 
-            command = lambda: webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1), 
-            borderwidth = 3)
-
-        self.load_button = tk.Button(text='Load File', font = ('Courier', 10), command = self.load_file, borderwidth = 3)
-                
-        self.quit_button = tk.Button(text='Quit Program', font = ('Courier', 10),
-        command = self.close_app, borderwidth = 3)
+                                    bg='lightgrey', value=2, cursor="hand2")
         
         self.my_button1.bind('<Enter>', self.on_hover)
         self.my_button1.bind('<Leave>', self.on_leave)
@@ -618,7 +618,7 @@ class MyGUI:
         
         if event.widget.get() == 'Enter name...' or event.widget.get() == 'Enter dept...' or event.widget.get() == 'Enter title...' \
             or event.widget.get() == 'Enter pay...' or event.widget.get() == 'Enter phone#...':
-            event.widget.delete(0, tk.END)     
+            event.widget.delete(0, tk.END) 
         
 # start_db_connection xampp using the subprocess module 
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')  
