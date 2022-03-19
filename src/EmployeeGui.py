@@ -146,7 +146,8 @@ class MyGUI:
         
         # Opens xampp's MySQL module's admin website via direct link
         self.visit_db = tk.Button(text='Visit DB website', font = ('Courier', 10), 
-            command = lambda: webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1), 
+            command = lambda: webbrowser.open( \
+                'http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1), 
             borderwidth = 3, cursor="hand2")
 
         # display formatted label 
@@ -254,15 +255,13 @@ class MyGUI:
     # create the empty dictionary
     employees = {}
     
-    '''
-    actions to create and start the db connection
-    '''
     def start_db_connection(self):
+        ''' actions to create and start the db connection
+        '''
         
         # connect to the database using credentials 
-        
         try:
-            #   host='localhost', port=3306, user='User', passwd='jkV2q]VNsmNnE!m')
+            # host='localhost', port=3306
             self.mydb = mysql.connector.connect(
             host='localhost', port=3306, user='root')
 
@@ -274,10 +273,9 @@ class MyGUI:
         self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
         self.mycursor.execute('use employee_db')
 
-    '''
-    performs actions when closing the app
-    '''
     def close_app(self):
+        ''' performs actions when closing the app
+        '''
         
         # Value 1 stands for checked check box, if user puts checkmark, we close the db connection to localhost 
         if self.cb_var1.get() == 1:
@@ -289,10 +287,9 @@ class MyGUI:
         # close gui window            
         self.main_window.destroy()
 
-    '''
-    actions performed for when looking up an employee
-    '''
     def look_up_employee(self):
+        ''' actions performed for when looking up an employee
+        '''
 
         # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -309,10 +306,10 @@ class MyGUI:
             
         self.clear_gui_entry_fields()
             
-    '''
-    actions for when adding an employee, add an employee to dictionary, by info gathered from GUI  
-    '''
     def add_employee(self, check = True, work_type = ''):
+        ''' actions for when adding an employee, add an employee to dictionary, by info gathered from GUI  
+        '''
+        
         self.mycursor = self.mydb.cursor(buffered=True)
         self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT PRIMARY KEY, \
                             Name VARCHAR(30), Department VARCHAR(30), \
@@ -434,11 +431,11 @@ class MyGUI:
         
         self.clear_gui_entry_fields()   
 
-    '''
-    actions performed to update an employee's data in the app by attaining info from GUI and 
-    updating an already existing employee's info in the dictionary
-    '''
+    
     def update_employee(self, check = True, message = ''):
+        ''' actions performed to update an employee's data in the app by attaining info from GUI and 
+            updating an already existing employee's info in the dictionary
+        '''
 
         # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -490,10 +487,9 @@ class MyGUI:
 
         self.clear_gui_entry_fields()
 
-    '''
-    deletes the employee from the app by locating it by ID in dictionary 
-    '''
     def delete_employee(self):
+        ''' deletes the employee from the app by locating it by ID in dictionary 
+        '''
 
         # create the empty database and table 
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -519,10 +515,9 @@ class MyGUI:
         
         self.clear_gui_entry_fields()
 
-    '''
-    actions performed to reset the app - deletes app memory, db, and .dat file
-    '''
     def reset_system(self):
+        ''' actions performed to reset the app - deletes app memory, db, and .dat file
+        '''
                 
         if messagebox.askquestion(title = 'Reset System' , message = 'Are you sure you want to delete everything?') == 'yes':
             self.mycursor = self.mydb.cursor(buffered=True)
@@ -543,10 +538,9 @@ class MyGUI:
         
         self.clear_gui_entry_fields()
 
-    '''
-    actions performed for when loading the .dat data file into the app
-    '''
-    def load_file(self):        
+    def load_file(self):  
+        ''' actions performed for when loading the .dat data file into the app
+        '''      
         
         # function to load binary file, data is automatically saved from the last time app is used 
         
@@ -580,10 +574,9 @@ class MyGUI:
             
         self.clear_gui_entry_fields() 
         
-    '''
-    clears all values in the gui text fields, used after clicking a button
-    '''
     def clear_gui_entry_fields(self):
+        ''' clears all values in the gui text fields, used after clicking a button
+        '''
         
         self.output_entry1.config(foreground = 'grey'), self.output_entry2.config(foreground = 'grey'),
         self.output_entry3.config(foreground = 'grey'), self.output_entry4.config(foreground = 'grey'),
@@ -594,30 +587,30 @@ class MyGUI:
         self.output_entry_var3.set('Enter title...'), self.output_entry_var4.set('Enter pay...'),
         self.output_entry_var5.set('Enter phone#...'), self.radio_var.set(0), self.output_entry.focus_set()
         
-    '''
-    when user hovers over a button, the button's background color and border width are changed to what is specified below
-    '''
     def on_hover(self, e):
+        ''' when user hovers over a button, the button's background color and border width are changed to what is specified below
+        '''
+        
         e.widget['background'] = 'lightgrey'
         e.widget['borderwidth'] = 3.8
 
-    '''
-    when user stops hovers over a button, the button's background color and border width are changed to default values
-    '''   
     def on_leave(self, e):
+        ''' when user stops hovers over a button, the button's background color and border width are changed to default values
+        '''   
+ 
         e.widget['background'] = 'SystemButtonFace' 
         e.widget['borderwidth'] = 3   
-            
-    '''
-    erases the auto inserted GUI startup entry box text
-    '''
+    
     def on_click(self, event):
+        ''' erases the auto inserted GUI startup entry box text
+        '''
+        
         # sets the entry box's text to be black and deletes existing text 
-        
         event.widget.config(foreground='black')
+        event_widget = event.widget.get()
         
-        if event.widget.get() == 'Enter name...' or event.widget.get() == 'Enter dept...' or event.widget.get() == 'Enter title...' \
-            or event.widget.get() == 'Enter pay...' or event.widget.get() == 'Enter phone#...':
+        if event_widget == 'Enter name...' or event_widget == 'Enter dept...' or event_widget == 'Enter title...' \
+            or event_widget == 'Enter pay...' or event_widget == 'Enter phone#...':
             event.widget.delete(0, tk.END) 
         
 # start_db_connection xampp using the subprocess module 
@@ -627,4 +620,4 @@ xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
 DATA_FILE = '..\\Employees.dat'
         
 # create instance of MyGUI class
-my_gui = MyGUI() 
+MyGUI() 
