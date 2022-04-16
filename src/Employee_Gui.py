@@ -478,6 +478,7 @@ class MyGUI:
             self.mydb.commit()
             
             message = 'The new employee has been updated'
+            
         elif not check:
             message = 'Couldn\'t update employees info.'
         elif ID not in self.employees:
