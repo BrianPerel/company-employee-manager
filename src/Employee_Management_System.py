@@ -1,11 +1,10 @@
 '''
 Author @ Brian Perel
-Employee class, structured to store and return info
+Employee_Management_System class, structured to store and return info
 on employees stored in employee dictionary stored in GUI.py
 '''
 
-# Employee class (EMPLOYEE MANAGEMENT SYSTEM)
-class Employee:
+class Employee_Management_System:
     # print(__doc__)
     def __init__(self, id_number, name, department, title, pay_rate, phone_number, work_type):
         self.__id_number = id_number
@@ -14,14 +13,14 @@ class Employee:
         self.__title = title
         self.__pay_rate = pay_rate
         self.__phone_number = phone_number
-        self.__work_type = work_type 
-        
+        self.__work_type = work_type
+
     def set_id_number(self, id_number):
         self.__id_number = id_number
 
     def set_name(self, name):
         self.__name = name
-        
+
     def set_department(self, department):
         self.__department = department
 
@@ -36,13 +35,13 @@ class Employee:
 
     def set_work_type(self, work_type):
         self.__work_type = work_type
-        
+
     def get_id_number(self):
         return self.__id_number
-    
+
     def get_name(self):
         return self.__name
-        
+
     def get_department(self):
         return self.__department
 
@@ -56,7 +55,7 @@ class Employee:
         return self.__phone_number
 
     def get_work_type(self):
-        return self.__work_type 
+        return self.__work_type
 
     def __str__(self):
         return 'ID number: ' + self.get_id_number() + \
