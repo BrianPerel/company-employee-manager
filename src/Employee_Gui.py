@@ -23,25 +23,27 @@ import os
 class EMSGui:
 
     # create the empty dictionary
-    employees = {}
+    __employees = {}
 
     # print(__doc__)
     def __init__(self):
-        self.start_db_connection()
-        self.create_gui()
+        self.__start_db_connection()
+        self.__create_gui()
 
-        self.check_db_size()
+        self.__check_db_size()
 
         # create a new file only if file doesn't exist, otherwise don't
         if not os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
             # create a new binary file to store binary object info, if one doesn't already exist in folder
             file_obj = open(SAVED_EMPLOYEES_DATA_FILE, 'wb')
             file_obj.close()
+        else:
+            self.__load_file()
 
         # statement needed to launch gui window
         self.main_window.mainloop()
 
-    def create_gui(self):
+    def __create_gui(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
 
         self.main_window = tk.Tk()  # make the GUI window
@@ -56,7 +58,7 @@ class EMSGui:
         self.header_label = tk.Label(text='EMPLOYEE MANAGEMENT SYSTEM',
                                font='Times 12 bold', bg='lightgrey')
 
-        # build line between header_label and body of app
+        # build line between header_label and the body of app
         self.canvas1 = tk.Canvas(self.main_window, width=495, height=40, bd=0,
                             borderwidth=0, bg='lightgrey', highlightthickness=0.5,
                             highlightbackground='lightgrey')
@@ -66,10 +68,7 @@ class EMSGui:
 
         # GUI button 1
         self.look_up_emp_button = tk.Button(text='Look Up Employee',
-                        command=self.look_up_employee, bg='SystemButtonFace')
-
-        # GUI message displayed in window (Label)
-        self.enter_id_label = tk.Label(text='\tEmployee ID:', font=('Courier', 10), bg='lightgrey')
+                        command=self.__look_up_employee, bg='SystemButtonFace')
 
         # create StringVar variables to store value input into entry box widget
         self.output_entry_var1 = tk.StringVar()
@@ -79,16 +78,20 @@ class EMSGui:
         self.output_entry_var5 = tk.StringVar()
         self.output_entry_var6 = tk.StringVar()
 
+        # GUI message displayed in window (Label)
+        self.enter_id_label = tk.Label(text='\tEmployee ID:', font=('Courier', 10), bg='lightgrey')
+
         # create an output box (GUI entry)
         self.id_output_entry = tk.Entry(width=15,
                                 textvariable=self.output_entry_var1, font=('Courier', 10), bd=2,
-                                highlightthickness=1, highlightcolor='black')
+                                highlightthickness=1, highlightcolor='black', validate="key",
+                                validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
         # sets focus on the first text field in app on startup
         self.id_output_entry.focus_set()
 
         # GUI button
-        self.add_emp_button = tk.Button(text='Add New Employee', command=self.add_employee)
+        self.add_emp_button = tk.Button(text='Add New Employee', command=self.__add_employee)
 
         # create label
         self.enter_name_label = tk.Label(text='\tEmployee Name:', font=('Courier', 10),
@@ -97,14 +100,16 @@ class EMSGui:
         # take entry box variable and perform action
         self.name_output_entry = tk.Entry(width=15,
                             textvariable=self.output_entry_var2, font=('Courier', 10), bd=2,
-                            highlightthickness=1, highlightcolor='black', foreground='gray')
+                            highlightthickness=1, highlightcolor='black', foreground='gray',
+                            validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
-        self.name_output_entry.insert(0, 'Enter name...')
-        self.name_output_entry.bind('<Button-1>', self.on_click)
-        self.name_output_entry.bind('<FocusIn>', self.on_click)
+        # if user clicks in this text field box with their mouse, call this function
+        self.name_output_entry.bind('<Button-1>', self.__on_click)
+        # if user clicks in this text field box with their keyboard, call this function
+        self.name_output_entry.bind('<FocusIn>', self.__on_click)
 
         # GUI button (update employee)
-        self.update_emp_button = tk.Button(text='Update Employee', command=self.update_employee)
+        self.update_emp_button = tk.Button(text='Update Employee', command=self.__update_employee)
 
         self.enter_dept_label = tk.Label(text='\tEmployee Dept:', font=('Courier', 10),
                                                        bg='lightgrey')
@@ -112,14 +117,14 @@ class EMSGui:
         # take entry box variable and perform action
         self.dept_output_entry = tk.Entry(width=15,
                                 textvariable=self.output_entry_var3, font=('Courier', 10), bd=2,
-                                highlightthickness=1, highlightcolor='black', foreground='gray')
+                                highlightthickness=1, highlightcolor='black', foreground='gray',
+                                validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
-        self.dept_output_entry.insert(0, 'Enter dept...')
-        self.dept_output_entry.bind('<Button-1>', self.on_click)
-        self.dept_output_entry.bind('<FocusIn>', self.on_click)
+        self.dept_output_entry.bind('<Button-1>', self.__on_click)
+        self.dept_output_entry.bind('<FocusIn>', self.__on_click)
 
         # GUI buttons (delete employee)
-        self.delete_emp_button = tk.Button(text='Delete Employee', command=self.delete_employee)
+        self.delete_emp_button = tk.Button(text='Delete Employee', command=self.__delete_employee)
 
         # display formatted label
         self.enter_title_label = tk.Label(text='\tEmployee Title:', font=('Courier', 10),
@@ -128,52 +133,54 @@ class EMSGui:
         # take entry box variable and perform action
         self.job_title_output_entry = tk.Entry(width=15,
                                 textvariable=self.output_entry_var4, font=('Courier', 10), bd=2,
-                                highlightthickness=1, highlightcolor='black', foreground='grey')
+                                highlightthickness=1, highlightcolor='black', foreground='grey',
+                                validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
-        self.job_title_output_entry.insert(0, 'Enter title...')
-        self.job_title_output_entry.bind('<Button-1>', self.on_click)
-        self.job_title_output_entry.bind('<FocusIn>', self.on_click)
-
-        # GUI formatted buttons, call appropriate method when clicked
-        self.reset_button = tk.Button(text='Reset System', command=self.reset_system)
-
-        # display formatted label
-        self.enter_pay_rate_label = tk.Label(text='\tPay Rate:', font=('Courier', 10), bg='lightgrey')
-
-        # take entry box variable and perform action
-        self.pay_rate_output_entry = tk.Entry(width=15,
-                                textvariable=self.output_entry_var5, font=('Courier', 10), bd=2,
-                                highlightthickness=1, highlightcolor='black', foreground='grey')
-
-        self.pay_rate_output_entry.insert(0, 'Enter pay...')
-        self.pay_rate_output_entry.bind('<Button-1>', self.on_click)
-        self.pay_rate_output_entry.bind('<FocusIn>', self.on_click)
+        self.job_title_output_entry.bind('<Button-1>', self.__on_click)
+        self.job_title_output_entry.bind('<FocusIn>', self.__on_click)
 
         # Opens xampp's MySQL module's admin website via direct link
         self.visit_db_button = tk.Button(text='Visit DB website',
             command=lambda: webbrowser.open(
                 'http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1))
 
+        # take entry box variable and perform action
+        self.pay_rate_output_entry = tk.Entry(width=15,
+                                textvariable=self.output_entry_var5, font=('Courier', 10), bd=2,
+                                highlightthickness=1, highlightcolor='black', foreground='grey',
+                                validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+
+        self.pay_rate_output_entry.bind('<Button-1>', self.__on_click)
+        self.pay_rate_output_entry.bind('<FocusIn>', self.__on_click)
+
+        self.canvas1_2 = tk.Canvas(self.main_window, width=150, height=40, bd=0,
+                            borderwidth=0, bg='lightgrey', highlightthickness=0.5,
+                            highlightbackground='lightgrey')
+
+        self.canvas1_2.create_line(2, 25, 600, 25, width=2)
+
+        # display formatted label
+        self.enter_pay_rate_label = tk.Label(text='\tPay Rate:', font=('Courier', 10), bg='lightgrey')
+
         # display formatted label
         self.enter_phone_num_label = tk.Label(text='\tPhone Number:', font=('Courier', 10), bg='lightgrey')
 
         self.phone_num_output_entry = tk.Entry(width=15,
                                 textvariable=self.output_entry_var6, font=('Courier', 10), bd=2,
-                                highlightthickness=1, highlightcolor='black', foreground='grey')
+                                highlightthickness=1, highlightcolor='black', foreground='grey',
+                                validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
-        self.phone_num_output_entry.insert(0, 'Enter phone#...')
-        self.phone_num_output_entry.bind('<Button-1>', self.on_click)
-        self.phone_num_output_entry.bind('<FocusIn>', self.on_click)
+        self.phone_num_output_entry.bind('<Button-1>', self.__on_click)
+        self.phone_num_output_entry.bind('<FocusIn>', self.__on_click)
+
+        # GUI formatted buttons, call appropriate method when clicked
+        self.reset_button = tk.Button(text='Reset System', command=self.__reset_system)
 
         # store input value from app into radio button variable
         self.radio_var = tk.IntVar()
 
         # reset radio button variable to option blank (0)
         self.radio_var.set(0)
-
-        self.load_button = tk.Button(text='Load File', command=self.load_file)
-
-        self.quit_button = tk.Button(text='Quit Program', command=self.close_app)
 
         # create radio button
         self.rb1 = tk.Radiobutton(text='Part Time Employee', variable=self.radio_var,
@@ -184,12 +191,12 @@ class EMSGui:
                                     bg='lightgrey', value=2, cursor='hand2')
 
         buttons = [self.look_up_emp_button, self.add_emp_button, self.update_emp_button, self.delete_emp_button, self.reset_button,
-                        self.visit_db_button, self.load_button, self.quit_button]
+                        self.visit_db_button]
 
         for button in buttons:
             button.config(font=('Courier', 10), borderwidth=3, cursor='hand2')
-            button.bind('<Enter>', self.on_hover)
-            button.bind('<Leave>', self.on_leave)
+            button.bind('<Enter>', self.__on_hover)
+            button.bind('<Leave>', self.__on_leave)
 
         # build line between body of app and footer_label
         self.canvas2 = tk.Canvas(self.main_window, width=495, height=40, bd=0,
@@ -223,18 +230,29 @@ class EMSGui:
         self.phone_num_output_entry.place(x=380, y=267)
         self.rb1.place(x=240, y=307)
         self.rb2.place(x=380, y=307)
-        self.reset_button.place(x=10, y=225)
-        self.visit_db_button.place(x=10, y=265)
-        self.load_button.place(x=10, y=305)
-        self.quit_button.place(x=110, y=305)
+        self.visit_db_button.place(x=10, y=225)
+        self.canvas1_2.place(x=10, y=258)
+        self.reset_button.place(x=10, y=307)
         self.canvas2.place(x=10, y=340)
         self.footer_label.place(x=160, y=380)
 
-        # listens for when 'x' exit button is pressed and routes to close_app
-        self.main_window.protocol('WM_DELETE_WINDOW', self.close_app)
+        # listens for when 'x' exit button is pressed and routes to __close_app
+        self.main_window.protocol('WM_DELETE_WINDOW', self.__close_app)
+
+    def __validate_entry(self, value):
+        # only allow up to 6 characters in ID and up to 4 characters in name
+        if self.main_window.focus_get() == self.id_output_entry:
+            return len(value) <= 6
+        elif self.main_window.focus_get() == self.name_output_entry or self.main_window.focus_get() == self.dept_output_entry \
+            or self.main_window.focus_get() == self.job_title_output_entry or self.main_window.focus_get() == self.phone_num_output_entry:
+            return len(value) <= 12
+        elif self.main_window.focus_get() == self.pay_rate_output_entry:
+            return len(value) <= 4
+        else:
+            return True
 
 
-    def start_db_connection(self):
+    def __start_db_connection(self):
         ''' actions to create and start the db connection
         '''
 
@@ -256,12 +274,16 @@ class EMSGui:
         except mysql.connector.Error as err:
             print('Error while creating the database or table: ' + str(err))
 
-    def close_app(self):
+    def __close_app(self):
         ''' performs actions when closing the app
         '''
 
         # close mysql connection
-        self.mydb.close()
+        try:
+            if self.mydb is not None:
+                self.mydb.close()
+        except Exception:
+            print('Error closing db connection')
 
         # close xampp app
         xampp.terminate()
@@ -269,7 +291,7 @@ class EMSGui:
         # close gui window
         self.main_window.destroy()
 
-    def check_db_size(self):
+    def __check_db_size(self):
         ''' attempts a select query on the db table to check if the database is empty. If we can't connect to the db because
             it doesn't yet exist or if the table is empty then start the GUI with these buttons disabled
         '''
@@ -278,11 +300,11 @@ class EMSGui:
             self.mycursor.execute('SELECT * FROM employees')
             rows = self.mycursor.fetchall()
             if(len(rows)) == 0:
-                self.reset_button['state'] = self.load_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
+                self.reset_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
         except mysql.connector.Error:
-                self.reset_button['state'] = self.load_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
+                self.reset_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
 
-    def look_up_employee(self):
+    def __look_up_employee(self):
         ''' actions performed for when looking up an employee
         '''
 
@@ -294,14 +316,14 @@ class EMSGui:
         ID = self.id_output_entry.get()
 
         # ternary operator
-        message = self.employees.get(ID) if (ID in self.employees) else 'No employee found under this ID'
+        message = self.__employees.get(ID) if (ID in self.__employees) else 'No employee found under this ID'
 
         # create a showinfo message box
         messagebox.showinfo(title='Employee Info', message=str(message))
 
-        self.clear_gui_entry_fields()
+        self.__clear_gui_entry_fields()
 
-    def add_employee(self, check=True, work_type=''):
+    def __add_employee(self, check=True, work_type=''):
         ''' actions for when adding an employee, add an employee to dictionary, by info gathered from GUI
         '''
         self.mycursor = self.mydb.cursor(buffered=True)
@@ -327,7 +349,7 @@ class EMSGui:
         if name == 'Enter name...' or dept == 'Enter dept...' or title == 'Enter title...' \
         or pay_rate == 'Enter pay...' or phone_number == 'Enter phone#...':
             messagebox.showerror(title='Info', message='Could not add employee.')
-            self.clear_gui_entry_fields()
+            self.__clear_gui_entry_fields()
             return
 
         # if user entered phone number without including dashes, manually attach them
@@ -362,7 +384,7 @@ class EMSGui:
         if(len(pay_rate) == 0):
             # show info message box with data
             messagebox.showerror(title='Info', message='Could not add employee.')
-            self.clear_gui_entry_fields()
+            self.__clear_gui_entry_fields()
             return
 
         # make sure pay_rate field only accepts numbers
@@ -373,23 +395,23 @@ class EMSGui:
             pay_rate = str(format(float(pay_rate), '.2f'))
         else:
             messagebox.showerror(title='Info', message='Could not add employee.')
-            self.clear_gui_entry_fields()
+            self.__clear_gui_entry_fields()
             return
 
         # create instance and send the values
         new_emp = EMS.Employee_Management_System(ID, name, dept, title, pay_rate, phone_number, work_type)
 
         # conditional statement to add employee into dictionary
-        if ID not in self.employees and len(phone_number) == 14 and check and len(ID) == 6 \
+        if ID not in self.__employees and len(phone_number) == 14 and check and len(ID) == 6 \
            and '' not in [name, dept, title, pay_rate, phone_number, work_type] \
            and pattern1 and pattern2 and pattern3 and not name_has_digit \
            and not dept_has_digit and not title_has_digit:
-            self.employees[ID] = new_emp
+            self.__employees[ID] = new_emp
             message = 'The new employee has been added'
 
             # if db exists (at least 1 record has been added to db table) then enable the look-up and reset buttons
             if self.reset_button['state'] == DISABLED or self.look_up_emp_button['state'] == DISABLED:
-                self.reset_button['state'] = self.load_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = NORMAL
+                self.reset_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = NORMAL
 
             # add a $ to pay_rate before adding it to the table in database
             pay_rate = pay_rate[:pay_rate.find(pay_rate)] + '$' + pay_rate[pay_rate.find(pay_rate):]
@@ -407,7 +429,7 @@ class EMSGui:
                 self.mydb.commit()
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
-                self.clear_gui_entry_fields()
+                self.__clear_gui_entry_fields()
                 print('Exception caught: ' + str(err))
 
         # input validation: make sure no fields are blank and input of proper lengths is given
@@ -416,15 +438,15 @@ class EMSGui:
              or not pattern2 or not pattern3 or name_has_digit \
              or dept_has_digit or title_has_digit or (len(phone_number) != 14):
             message = 'Could not add employee.'
-        elif ID in self.employees:
+        elif ID in self.__employees:
             message = 'An employee with that ID already exists.'
 
         # show info message box with data
         messagebox.showinfo(title='Info', message=message)
 
-        self.clear_gui_entry_fields()
+        self.__clear_gui_entry_fields()
 
-    def update_employee(self, check=True, message=''):
+    def __update_employee(self, check=True, message=''):
         ''' actions performed to update an employee's data in the app by attaining info from GUI and
             updating an already existing employee's info in the dictionary
         '''
@@ -445,7 +467,7 @@ class EMSGui:
             print('Exception caught: ' + str(err))
             check = False
 
-        if ID in self.employees:
+        if ID in self.__employees:
             name, dept = self.name_output_entry.get(), self.dept_output_entry.get()
             title, pay_rate = self.job_title_output_entry.get(), self.pay_rate_output_entry.get()
             phone_number = self.phone_num_output_entry.get()
@@ -459,7 +481,7 @@ class EMSGui:
                 work_type = 'Full time'
 
             # store employee object in employee dictionary, the dictionary's key is the employee's ID
-            self.employees[ID] = EMS.Employee_Management_System(ID, name, dept,
+            self.__employees[ID] = EMS.Employee_Management_System(ID, name, dept,
                                     title, pay_rate, phone_number, work_type)
 
             check = 'SELECT * FROM employees WHERE ID = %s'
@@ -473,14 +495,14 @@ class EMSGui:
 
         elif not check:
             message = 'Couldn\'t update employees info.'
-        elif ID not in self.employees:
+        elif ID not in self.__employees:
             message = 'No employee found under this ID'
 
         messagebox.showinfo(title='Info', message=message)
 
-        self.clear_gui_entry_fields()
+        self.__clear_gui_entry_fields()
 
-    def delete_employee(self):
+    def __delete_employee(self):
         ''' deletes the employee from the app by locating it by ID in dictionary
         '''
 
@@ -498,19 +520,19 @@ class EMSGui:
             print('Exception caught: ' + str(err))
 
         # to delete an employee, must be in db. Perform this check
-        if ID in self.employees:
-            del self.employees[ID]
+        if ID in self.__employees:
+            del self.__employees[ID]
             message = 'Employee deleted'
         else:
             message = 'The specified ID number was not found'
 
         messagebox.showinfo(title='Info', message=message)
 
-        self.clear_gui_entry_fields()
+        self.__clear_gui_entry_fields()
 
-        self.check_db_size()
+        self.__check_db_size()
 
-    def reset_system(self):
+    def __reset_system(self):
         ''' actions performed to reset the app - deletes app memory, db, and .dat file
         '''
 
@@ -518,7 +540,7 @@ class EMSGui:
             self.mycursor = self.mydb.cursor(buffered=True)
 
             # function to reset app data, in case company leaves. This will delete all data in app and the whole database
-            self.employees = {}
+            self.__employees = {}
 
             try:
                 self.mycursor.execute('DROP TABLE employees')
@@ -529,35 +551,27 @@ class EMSGui:
             except FileNotFoundError as err:
                 messagebox.showerror(title='Info', message='File not found\n' + str(err))
 
-            self.reset_button['state'] = self.load_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
+            self.reset_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
 
-        self.clear_gui_entry_fields()
+        self.__clear_gui_entry_fields()
 
-    def load_file(self):
+    def __load_file(self):
         ''' actions performed for when loading the .dat data file into the app
         '''
 
         # function to load binary file, data is automatically saved from the last time app is used
 
         try:
-            if not os.path.isfile(SAVED_EMPLOYEES_DATA_FILE):
-                messagebox.showinfo(title='Info', message='Cannot load directories')
-            elif not os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
-                messagebox.showinfo(title='Info', message='Cannot read file')
-            elif os.stat(SAVED_EMPLOYEES_DATA_FILE).st_size == 0:
-                messagebox.showinfo(title='Info', message='File is empty')
-
-            else:
+            if os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK) \
+                and os.stat(SAVED_EMPLOYEES_DATA_FILE).st_size != 0:
                 file_obj = open(SAVED_EMPLOYEES_DATA_FILE, 'rb')
                 content = pickle.load(file_obj)
 
                 try:
                     while content != ' ':
-                        messagebox.showinfo(title='Info', message=content)
-
                         ID = content.get_id_number()
-                        if ID not in self.employees:
-                            self.employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
+                        if ID not in self.__employees:
+                            self.__employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
                                      content.get_title(), content.get_pay_rate(),
                                      content.get_phone_number(), content.get_work_type())
 
@@ -571,9 +585,9 @@ class EMSGui:
         except FileNotFoundError as err:
             messagebox.showerror(title='Info', message='File not found\n' + str(err))
 
-        self.clear_gui_entry_fields()
+        self.__clear_gui_entry_fields()
 
-    def clear_gui_entry_fields(self):
+    def __clear_gui_entry_fields(self):
         ''' clears all values in the gui text fields, used after clicking a button
         '''
 
@@ -586,21 +600,21 @@ class EMSGui:
         self.output_entry_var4.set('Enter title...'), self.output_entry_var5.set('Enter pay...'),
         self.output_entry_var6.set('Enter phone#...'), self.radio_var.set(0), self.id_output_entry.focus_set()
 
-    def on_hover(self, event):
+    def __on_hover(self, event):
         ''' when user hovers over a button, the button's background color and border width are changed to what is specified below
         '''
 
         event.widget['bg'] = 'lightgrey'
         event.widget['borderwidth'] = 3.8
 
-    def on_leave(self, event):
+    def __on_leave(self, event):
         ''' when user stops hovers over a button, the button's background color and border width are changed to default values
         '''
 
         event.widget['bg'] = 'SystemButtonFace'
         event.widget['borderwidth'] = 3
 
-    def on_click(self, event):
+    def __on_click(self, event):
         ''' erases the auto inserted GUI startup entry box text
         '''
 
@@ -612,7 +626,8 @@ class EMSGui:
             event.widget.delete(0, tk.END)
 
 
-# start_db_connection xampp using the subprocess module
+
+# start xampp control panel using the subprocess module
 xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
 
 # defines the file to save the apps employee profiles to. The saved file can be loaded later
