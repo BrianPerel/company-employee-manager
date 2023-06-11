@@ -1,6 +1,7 @@
-__pycache__
+/__pycache__/
 /build/
 *.log
 *.zip
 *.spec
 *.dat
+*.pyc

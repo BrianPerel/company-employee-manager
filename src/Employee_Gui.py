@@ -46,7 +46,12 @@ class EMSGui:
 
         self.main_window = tk.Tk()  # make the GUI window
         self.main_window.geometry('520x420')  # width x height of the GUI window
-        self.main_window.iconphoto(True, PhotoImage(file='../res/icon.png'))
+
+        try:
+            self.main_window.iconphoto(True, PhotoImage(file='../res/icon.png'))
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
         self.main_window.configure(background='lightgrey')  # app (GUI) background color
         self.main_window.title('EMS')  # app title
         self.main_window.resizable(0, 0)  # disable resizable option for GUI
@@ -254,7 +259,6 @@ class EMSGui:
             # host='localhost', port=3306
             self.mydb = mysql.connector.connect(
             host='localhost', port=3306, user='root')
-
         except mysql.connector.Error as err:
             print('Exception caught: ' + str(err))
             xampp.terminate()
@@ -356,7 +360,15 @@ class EMSGui:
 
         # if user entered phone number without including dashes, manually attach them
         if '-' not in phone_number:
-            phone_number = '{}-{}-{}'.format(phone_number[:5], phone_number[5:8], phone_number[8:])
+            phone_number = '{}-{}-{}'.format(phone_number[:3], phone_number[3:6], phone_number[6:])
+
+        formatted_phone_number_without_dashes = "".join((phone_number[:3], phone_number[4:7], phone_number[8:])).replace(" ", "")
+
+        for digit in formatted_phone_number_without_dashes:
+            if not digit.isdigit():
+                messagebox.showinfo(title='Info', message='Could not add employee.')
+                self.__clear_gui_entry_fields()
+                return
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark
@@ -378,14 +390,19 @@ class EMSGui:
         # make sure pay_rate field only accepts numbers
         pay_rate_has_letters = any(digit.isalpha() for digit in pay_rate)
 
-        # add a $ to pay_rate before adding it to the table in database
+        # add a $ to pay_rate before adding it to the database table
         if '$' in pay_rate:
             pay_rate = pay_rate.replace('$', '')
 
-        # cast to float and format number, cast pay_rate back to string
-        if not pay_rate_has_letters and float(pay_rate) > 0:
-            pay_rate = '$' + str(format(float(pay_rate), '.2f'))
-        else:
+        try:
+            # cast to float and format number, cast pay_rate back to string
+            if not pay_rate_has_letters and float(pay_rate) > 0:
+                pay_rate = '$' + str(format(float(pay_rate), '.2f'))
+            else:
+                messagebox.showinfo(title='Info', message='Could not add employee.')
+                self.__clear_gui_entry_fields()
+                return
+        except ValueError as err:
             messagebox.showinfo(title='Info', message='Could not add employee.')
             self.__clear_gui_entry_fields()
             return
@@ -435,7 +452,7 @@ class EMSGui:
 
         self.__clear_gui_entry_fields()
 
-    def __update_employee(self, check=True, message=''):
+    def __update_employee(self, check=True, message='', work_type = ''):
         ''' actions performed to update an employee's data in the app by attaining info from GUI and
             updating an already existing employee's info in the dictionary
         '''
@@ -450,26 +467,73 @@ class EMSGui:
         # get values from entry box widget
         try:
             ID = self.id_output_entry.get()
-
         except ValueError as err:
             print('Exception caught: ' + str(err))
             check = False
 
         if ID in self.__employees:
-            name, dept = self.name_output_entry.get(), self.dept_output_entry.get()
-            title, pay_rate = self.job_title_output_entry.get(), self.pay_rate_output_entry.get()
-            phone_number = self.phone_num_output_entry.get()
+            name, dept = self.name_output_entry.get().title().strip(), self.dept_output_entry.get().title().strip()
+            title, pay_rate = self.job_title_output_entry.get().title().strip(), self.pay_rate_output_entry.get().strip()
+            phone_number = self.phone_num_output_entry.get().strip()
+
+            # if user entered phone number without including dashes, manually attach them
+            if '-' not in phone_number:
+                phone_number = '{}-{}-{}'.format(phone_number[:3], phone_number[3:6], phone_number[6:])
+
+            formatted_phone_number_without_dashes = "".join((phone_number[:3], phone_number[4:7], phone_number[8:])).replace(" ", "")
+
+            for digit in formatted_phone_number_without_dashes:
+                if not digit.isdigit():
+                    messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                    self.__clear_gui_entry_fields()
+                    return
+
+            # use regular expressions to check format of info given
+            # name, dept, title should all only contain letters, if nums are contained then mark
+            pattern1 = regular_exp.match('[a-zA-Z]+', name)
+            name_has_digit = any(digit.isdigit() for digit in name)
+
+            pattern2 = regular_exp.match('[a-zA-Z]+', dept)
+            dept_has_digit = any(digit.isdigit() for digit in dept)
+
+            pattern3 = regular_exp.match('[a-zA-Z]+', title)
+            title_has_digit = any(digit.isdigit() for digit in title)
+
+            # make sure pay_rate field only accepts numbers
+            pay_rate_has_letters = any(digit.isalpha() for digit in pay_rate)
+
+            # add a $ to pay_rate before adding it to the database table
+            if '$' in pay_rate:
+                pay_rate = pay_rate.replace('$', '')
+
+            try:
+                # cast to float and format number, cast pay_rate back to string
+                if not pay_rate_has_letters and float(pay_rate) > 0:
+                    pay_rate = '$' + str(format(float(pay_rate), '.2f'))
+                else:
+                    messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                    self.__clear_gui_entry_fields()
+                    return
+            except ValueError as err:
+                messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                self.__clear_gui_entry_fields()
+                return
 
             # create radio buttons: 0 is representative of when neither is selected, 1 is for first circle, 2 is for second circle
-            if self.radio_var.get() == 0:
-                messagebox.showinfo(title='Info', message='Couldn\'t update employees info')
+            if self.radio_var.get() == 0 or len(phone_number) != 12 or not check \
+            or '' in [name, dept, title, pay_rate, phone_number] or not pattern1 \
+            or name_has_digit or not pattern2 or dept_has_digit or not pattern3 \
+            or title_has_digit or pay_rate_has_letters:
+                messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                self.__clear_gui_entry_fields()
+                return
             elif self.radio_var.get() == 1:
                 work_type = 'Part time'
             elif self.radio_var.get() == 2:
                 work_type = 'Full time'
 
             # store employee object in employee dictionary, the dictionary's key is the employee's ID
-            self.__employees[ID] = EMS.Employee_Management_System(ID, name, dept,
+            self.__employees[ID] = EMS.Employee_Management_System(ID, name, dept, \
                                     title, pay_rate, phone_number, work_type)
 
             check = 'SELECT * FROM employees WHERE ID = %s'
@@ -479,10 +543,10 @@ class EMSGui:
                     (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}'))
             self.mydb.commit()
 
-            message = 'The new employee has been updated'
+            message = 'The employee has been updated'
 
         elif not check:
-            message = 'Couldn\'t update employees info.'
+            message = 'Couldn\'t update employee\'s info.'
         elif ID not in self.__employees:
             message = 'No employee found under this ID'
 
@@ -500,7 +564,6 @@ class EMSGui:
         try:
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
             self.mydb.commit()
-
         except mysql.connector.Error as err:
             print('Exception caught: ' + str(err))
 

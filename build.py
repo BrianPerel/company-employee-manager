@@ -18,12 +18,10 @@ def __create_exe():
         f'pyinstaller --upx-dir=C:\\upx-4.0.2-win64 --noconsole --onefile '
         f'--distpath="{output_dir}" '  # Set the output directory
         f'{current_dir}/src/Employee_Gui.py {current_dir}/src/Employee_Management_System.py '
-        f'--icon={current_dir}/res/icon.ico --name Employee_Manager.exe'
+        f'--icon={current_dir}/res/icon.ico --name "Employee Manager.exe"'
     )
-    os.system(cmd)
 
-    os.remove("Employee_Manager.exe.spec")
-    os.system('rmdir /s /q build')
+    os.system(cmd)
 
 def __move_res_files():
     output_dir = os.path.join(current_dir, 'dist')  # Specify the output directory
@@ -48,7 +46,7 @@ def __build():
 
     __clean()
 
-    print("create-Employee_Manager.exe")
+    print("create-Employee Manager.exe")
 
     __create_exe()
 

@@ -62,6 +62,6 @@ class Employee_Management_System:
                  '\nName: ' + self.get_name() + \
                  '\nDepartment: ' + self.get_department() + \
                  '\nTitle: ' + self.get_title() + \
-                 '\nPay rate: $' + self.get_pay_rate() + \
+                 '\nPay rate: ' + self.get_pay_rate() + \
                  '\nPhone number: ' + self.get_phone_number() + \
                  '\nEmployee Type: ' + self.get_work_type()
