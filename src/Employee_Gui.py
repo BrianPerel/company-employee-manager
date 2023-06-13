@@ -354,9 +354,7 @@ class EMSGui:
         if ID == 'Enter id...' or name == 'Enter name...' or dept == 'Enter dept...' or \
         title == 'Enter title...' or pay_rate == 'Enter pay...' or phone_number == 'XXX-XXX-XXXX' or \
         not ID.isdigit() or len(pay_rate) == 0 or self.radio_var.get() == 0:
-            messagebox.showinfo(title='Info', message='Could not add employee.')
-            self.__clear_gui_entry_fields()
-            return
+            check = False
 
         # if user entered phone number without including dashes, manually attach them
         if '-' not in phone_number:
@@ -366,19 +364,16 @@ class EMSGui:
 
         for digit in formatted_phone_number_without_dashes:
             if not digit.isdigit():
-                messagebox.showinfo(title='Info', message='Could not add employee.')
-                self.__clear_gui_entry_fields()
-                return
+                check = False
+                break
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark
         pattern1 = regular_exp.match('[a-zA-Z]+', name)
-        name_has_digit = any(digit.isdigit() for digit in name)
-
         pattern2 = regular_exp.match('[a-zA-Z]+', dept)
-        dept_has_digit = any(digit.isdigit() for digit in dept)
-
         pattern3 = regular_exp.match('[a-zA-Z]+', title)
+        name_has_digit = any(digit.isdigit() for digit in name)
+        dept_has_digit = any(digit.isdigit() for digit in dept)
         title_has_digit = any(digit.isdigit() for digit in title)
 
         # value of 1 stands for part-time radio button option, 2 for full time option
@@ -399,11 +394,9 @@ class EMSGui:
             if not pay_rate_has_letters and float(pay_rate) > 0:
                 pay_rate = '$' + str(format(float(pay_rate), '.2f'))
             else:
-                messagebox.showinfo(title='Info', message='Could not add employee.')
-                self.__clear_gui_entry_fields()
-                return
+                check = False
         except ValueError as err:
-            messagebox.showinfo(title='Info', message='Could not add employee.')
+            messagebox.showinfo(title='Info', message='Couldn\'t add employee.')
             self.__clear_gui_entry_fields()
             return
 
@@ -443,7 +436,7 @@ class EMSGui:
              or not check or len(ID) != 6 or not pattern1 \
              or not pattern2 or not pattern3 or name_has_digit \
              or dept_has_digit or title_has_digit or (len(phone_number) != 12):
-            message = 'Could not add employee.'
+            message = 'Couldn\'t add employee.'
         elif ID in self.__employees:
             message = 'An employee with that ID already exists.'
 
@@ -472,8 +465,10 @@ class EMSGui:
             check = False
 
         if ID in self.__employees:
-            name, dept = self.name_output_entry.get().title().strip(), self.dept_output_entry.get().title().strip()
-            title, pay_rate = self.job_title_output_entry.get().title().strip(), self.pay_rate_output_entry.get().strip()
+            name = self.name_output_entry.get().title().strip()
+            dept = self.dept_output_entry.get().title().strip()
+            title = self.job_title_output_entry.get().title().strip()
+            pay_rate = self.pay_rate_output_entry.get().strip()
             phone_number = self.phone_num_output_entry.get().strip()
 
             # if user entered phone number without including dashes, manually attach them
@@ -484,19 +479,16 @@ class EMSGui:
 
             for digit in formatted_phone_number_without_dashes:
                 if not digit.isdigit():
-                    messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
-                    self.__clear_gui_entry_fields()
-                    return
+                    check = False
+                    break
 
             # use regular expressions to check format of info given
             # name, dept, title should all only contain letters, if nums are contained then mark
             pattern1 = regular_exp.match('[a-zA-Z]+', name)
-            name_has_digit = any(digit.isdigit() for digit in name)
-
             pattern2 = regular_exp.match('[a-zA-Z]+', dept)
-            dept_has_digit = any(digit.isdigit() for digit in dept)
-
             pattern3 = regular_exp.match('[a-zA-Z]+', title)
+            name_has_digit = any(digit.isdigit() for digit in name)
+            dept_has_digit = any(digit.isdigit() for digit in dept)
             title_has_digit = any(digit.isdigit() for digit in title)
 
             # make sure pay_rate field only accepts numbers
@@ -511,9 +503,7 @@ class EMSGui:
                 if not pay_rate_has_letters and float(pay_rate) > 0:
                     pay_rate = '$' + str(format(float(pay_rate), '.2f'))
                 else:
-                    messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
-                    self.__clear_gui_entry_fields()
-                    return
+                    check = False
             except ValueError as err:
                 messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
                 self.__clear_gui_entry_fields()
@@ -545,8 +535,6 @@ class EMSGui:
 
             message = 'The employee has been updated'
 
-        elif not check:
-            message = 'Couldn\'t update employee\'s info.'
         elif ID not in self.__employees:
             message = 'No employee found under this ID'
 
