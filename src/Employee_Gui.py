@@ -330,7 +330,7 @@ class EMSGui:
 
         self.__clear_gui_entry_fields()
 
-    def __add_employee(self, check=True):
+    def __add_employee(self, check=True, work_type=''):
         ''' actions for when adding an employee, add an employee to dictionary, by info gathered from GUI
         '''
         self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT PRIMARY KEY, \

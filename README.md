@@ -13,11 +13,6 @@ account that matches the account listed in src code
 - NOTE: you must have Python's MySQL connector module installed to do development work
 if not, run the commands 'pip install mysql-connector-python'
 
-- To create .exe: Use these cmds in cmd prompt to generate a .exe binary file of the application
-pyinstaller must be installed in command prompt to run
-the following cmd (if not installed use 'pip install pyinstaller'):
-pyinstaller --noconsole --onefile GUI.py --icon=res/icon.ico --name App
-
-- or alternatively, you can delete the build and dist folders + run the build.bat file, but run it from the windows explorer location of this project
+- To create .exe: run the build.py script which will generate a new dist folder with the icon and exe files
 
 - [Check out the project here](https://brianperel.github.io/project2.htm)
