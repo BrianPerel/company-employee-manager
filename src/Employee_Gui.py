@@ -17,6 +17,7 @@ import mysql.connector
 import tkinter as tk
 import subprocess
 import webbrowser
+import logging
 import pickle
 import time
 import os
@@ -33,7 +34,7 @@ class EMSGui:
 
         self.__check_db_size()
 
-        # create a new file only if file doesn't exist, otherwise don't
+        # create a new file only if file doesn't exist
         if not os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
             # create a new binary file to store binary object info, if one doesn't already exist in folder
             file_obj = open(SAVED_EMPLOYEES_DATA_FILE, 'wb')
@@ -50,7 +51,7 @@ class EMSGui:
         try:
             self.main_window.iconphoto(True, PhotoImage(file='../res/icon.png'))
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
 
         self.main_window.configure(background='lightgrey')  # app (GUI) background color
         self.main_window.title('EMS')  # app title
@@ -259,8 +260,9 @@ class EMSGui:
             # host='localhost', port=3306
             self.mydb = mysql.connector.connect(
             host='localhost', port=3306, user='root')
+            logger.info('Database connection established to employee_db')
         except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
+            logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
             xampp.terminate()
 
         # create the empty database and table, if they don't already exist
@@ -270,31 +272,37 @@ class EMSGui:
             self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
             self.mycursor.execute('USE employee_db')
         except mysql.connector.Error as err:
-            print('Error while creating the database or table: ' + str(err))
+            logger.error('Error while creating the database or table: ' + str(err))
 
     def __open_db_website(self):
         try:
             webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
         except webbrowser.Error:
-            print("Failed to open DB website.")
+            logger.error("Failed to open DB website.")
 
     def __close_app(self):
         ''' performs actions when closing the app
         '''
+
+        connection_closed = False
 
         # close MySQL connection if one exists
         try:
             if self.mydb is not None:
                 self.mycursor.close()
                 self.mydb.close()
+                connection_closed = True
         except mysql.connector.Error:
-            print('Error closing db connection')
+            logger.error('Error closing db connection')
 
         # close xampp app
         xampp.terminate()
 
         # close gui window
         self.main_window.destroy()
+
+        if connection_closed:
+            logger.info('Employee application, xampp, and employee_db database connection successfully closed')
 
     def __check_db_size(self):
         ''' attempts a select query on the db table to check if the database is empty. If we can't connect to the db because
@@ -348,7 +356,7 @@ class EMSGui:
             pay_rate = self.pay_rate_output_entry.get().strip()
             phone_number = self.phone_num_output_entry.get().strip()
         except ValueError as err:
-            print('Exception caught: ' + str(err))
+            logger.error('Exception caught: ' + str(err))
             check = False
 
         if ID == 'Enter id...' or name == 'Enter name...' or dept == 'Enter dept...' or \
@@ -429,7 +437,7 @@ class EMSGui:
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
                 self.__clear_gui_entry_fields()
-                print('Exception caught: ' + str(err))
+                logger.error('Exception caught: ' + str(err))
 
         # input validation: make sure no fields are blank and input of proper lengths is given
         elif '' in [ID, name, dept, title, pay_rate, phone_number, work_type] \
@@ -461,7 +469,7 @@ class EMSGui:
         try:
             ID = self.id_output_entry.get()
         except ValueError as err:
-            print('Exception caught: ' + str(err))
+            logger.error('Exception caught: ' + str(err))
             check = False
 
         if ID in self.__employees:
@@ -553,7 +561,7 @@ class EMSGui:
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
             self.mydb.commit()
         except mysql.connector.Error as err:
-            print('Exception caught: ' + str(err))
+            logger.error('Exception caught: ' + str(err))
 
         # to delete an employee, must be in db. Perform this check
         if ID in self.__employees:
@@ -565,7 +573,6 @@ class EMSGui:
         messagebox.showinfo(title='Info', message=message)
 
         self.__clear_gui_entry_fields()
-
         self.__check_db_size()
 
     def __reset_system(self):
@@ -696,13 +703,28 @@ class EMSGui:
         entry_widget.config(validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
 
+# setup and configure a custom logger
+logger = logging.getLogger("employee_logger") # create a custom logger
+logger.setLevel(logging.INFO) # set the logger's level to include INFO level logs
+
+# create a console handler, set a custom formatter on the console handler, add the console handler to the logger
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
+logger.addHandler(console_handler)
+
+# create a file handler, set a custom formatter on the file handler, add the file handler to the logger
+file_handler = logging.FileHandler(f'employee_manager_{datetime.now().strftime("%d-%m-%Y")}.log', mode='w')
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
+logger.addHandler(file_handler)
+
 # start xampp control panel using the subprocess module
 try:
     xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
+    logger.info("xampp control panel launched")
 except FileNotFoundError:
-    print("XAMPP control panel executable file not found")
+    logger.error("XAMPP control panel executable file not found")
 except PermissionError:
-    print("Insufficient permissions to execute XAMPP control panel")
+    logger.error("Insufficient permissions to execute XAMPP control panel")
 
 # wait 1/2 a second after launching XAMPP to make sure that Apache and MySQL services
 # started if user has auto launch enabled in XAMPP config.
