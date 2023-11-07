@@ -712,15 +712,15 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
 logger.addHandler(console_handler)
 
-# create a file handler, set a custom formatter on the file handler, add the file handler to the logger
-file_handler = logging.FileHandler(f'employee_manager_{datetime.now().strftime("%d-%m-%Y")}.log', mode='w')
+# create a file handler, set a custom formatter on the file handler, add the file handler to the logger. Log file will override existing log file of same date
+file_handler = logging.FileHandler(f'employee_manager.{datetime.now().strftime("%d_%m_%Y")}.log', mode='w')
 file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
 logger.addHandler(file_handler)
 
 # start xampp control panel using the subprocess module
 try:
     xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
-    logger.info("xampp control panel launched")
+    logger.info("xampp control panel started")
 except FileNotFoundError:
     logger.error("XAMPP control panel executable file not found")
 except PermissionError:
