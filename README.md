@@ -1,4 +1,4 @@
-### company-employee-program
+### company-employee-manager
 - About: Python program that will store information about employees in a company using a dictionary.
 - Python version `3.10` used for development
 
