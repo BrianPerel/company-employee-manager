@@ -24,14 +24,13 @@ import os
 
 class EMSGui:
 
-    # create the empty dictionary
-    __employees = {}
-
     # print(__doc__)
     def __init__(self):
+        self.__employees = {} # create empty dictionary
+
+        self.__start_xampp()
         self.__start_db_connection()
         self.__create_gui()
-
         self.__check_db_size()
 
         # create a new file only if file doesn't exist
@@ -41,6 +40,40 @@ class EMSGui:
             file_obj.close()
         else:
             self.__load_file()
+
+    def __start_xampp(self):
+        # start xampp control panel using the subprocess module
+
+        try:
+            self.xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
+            logger.info("xampp control panel started")
+        except FileNotFoundError:
+            logger.error("XAMPP control panel executable file not found")
+        except PermissionError:
+            logger.error("Insufficient permissions to execute XAMPP control panel")
+
+    def __start_db_connection(self):
+        ''' actions to create and start the db connection
+        '''
+
+        # connect to the MySQL database using user credentials
+        try:
+            # host='localhost', port=3306
+            self.mydb = mysql.connector.connect(
+            host='localhost', port=3306, user='root')
+            logger.info('Database connection established to employee_db')
+        except mysql.connector.Error as err:
+            logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
+            self.xampp.terminate()
+
+        # create the empty database and table, if they don't already exist
+        try:
+            # create a buffered cursor object for executing SQL queries on a MySQL database
+            self.mycursor = self.mydb.cursor(buffered=True)
+            self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
+            self.mycursor.execute('USE employee_db')
+        except mysql.connector.Error as err:
+            logger.error('Error while creating the database or table: ' + str(err))
 
     def __create_gui(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
@@ -251,39 +284,9 @@ class EMSGui:
         else:
             return True
 
-    def __start_db_connection(self):
-        ''' actions to create and start the db connection
-        '''
-
-        # connect to the MySQL database using user credentials
-        try:
-            # host='localhost', port=3306
-            self.mydb = mysql.connector.connect(
-            host='localhost', port=3306, user='root')
-            logger.info('Database connection established to employee_db')
-        except mysql.connector.Error as err:
-            logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
-            xampp.terminate()
-
-        # create the empty database and table, if they don't already exist
-        try:
-            # create a buffered cursor object for executing SQL queries on a MySQL database
-            self.mycursor = self.mydb.cursor(buffered=True)
-            self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
-            self.mycursor.execute('USE employee_db')
-        except mysql.connector.Error as err:
-            logger.error('Error while creating the database or table: ' + str(err))
-
-    def __open_db_website(self):
-        try:
-            webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
-        except webbrowser.Error:
-            logger.error("Failed to open DB website.")
-
     def __close_app(self):
         ''' performs actions when closing the app
         '''
-
         connection_closed = False
 
         # close MySQL connection if one exists
@@ -296,7 +299,7 @@ class EMSGui:
             logger.error('Error closing db connection')
 
         # close xampp app
-        xampp.terminate()
+        self.xampp.terminate()
 
         # close gui window
         self.main_window.destroy()
@@ -321,6 +324,12 @@ class EMSGui:
                 self.reset_button['state'] = self.delete_emp_button['state'] = self.update_emp_button['state'] = self.look_up_emp_button['state'] = DISABLED
                 if(os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
                     os.remove(SAVED_EMPLOYEES_DATA_FILE)
+
+    def __open_db_website(self):
+        try:
+            webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
+        except webbrowser.Error:
+            logger.error("Failed to open DB website.")
 
     def __look_up_employee(self):
         ''' actions performed for when looking up an employee
@@ -600,10 +609,8 @@ class EMSGui:
         self.__clear_gui_entry_fields()
 
     def __load_file(self):
-        ''' actions performed for when loading the .dat data file into the app
+        ''' actions performed for when loading the .dat binary data file into the app. Data is automatically saved from the last time app is used
         '''
-
-        # function to load binary file, data is automatically saved from the last time app is used
 
         try:
             if os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK) \
@@ -698,9 +705,7 @@ class EMSGui:
             return
 
         entry_widget.update()
-        entry_widget.config(foreground='grey')
-        entry_widget.config(validate="key")
-        entry_widget.config(validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        entry_widget.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
 
 # setup and configure a custom logger
@@ -717,15 +722,6 @@ file_handler = logging.FileHandler(f'employee_manager.{datetime.now().strftime("
 file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
 logger.addHandler(file_handler)
 
-# start xampp control panel using the subprocess module
-try:
-    xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
-    logger.info("xampp control panel started")
-except FileNotFoundError:
-    logger.error("XAMPP control panel executable file not found")
-except PermissionError:
-    logger.error("Insufficient permissions to execute XAMPP control panel")
-
 # wait 1/2 a second after launching XAMPP to make sure that Apache and MySQL services
 # started if user has auto launch enabled in XAMPP config.
 # This is to ensure that later when we attempt to connect to the
@@ -738,5 +734,5 @@ SAVED_EMPLOYEES_DATA_FILE = '..\\Employees.dat'
 # create instance of EMSGui class
 app = EMSGui()
 
-# statement needed to launch gui window
+# launch gui window
 app.main_window.mainloop()
