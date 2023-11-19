@@ -52,6 +52,18 @@ def __build():
 
     __move_res_files()
 
+    file_path = "Employee Manager.exe.spec"
+
+    try:
+        os.remove(file_path)
+        print(f"The file '{file_path}' has been successfully deleted.")
+    except FileNotFoundError:
+        print(f"The file '{file_path}' does not exist.")
+    except PermissionError:
+        print(f"Permission error: Unable to delete the file '{file_path}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
     print("BUILD SUCCESSFUL")
 
     end_time = time.time() # end script time tracker

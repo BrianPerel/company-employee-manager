@@ -10,6 +10,7 @@ and MySQL (to be able to connect and perform database actions) modules)
 from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
+import Employee_Logger as EMS_Logger
 from tkinter import PhotoImage
 from datetime import datetime
 import re as regular_exp
@@ -17,7 +18,6 @@ import mysql.connector
 import tkinter as tk
 import subprocess
 import webbrowser
-import logging
 import pickle
 import time
 import os
@@ -27,6 +27,7 @@ class EMSGui:
     # print(__doc__)
     def __init__(self):
         self.__employees = {} # create empty dictionary
+        self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
 
         self.__start_xampp()
         self.__start_db_connection()
@@ -46,11 +47,11 @@ class EMSGui:
 
         try:
             self.xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
-            logger.info("xampp control panel started")
+            self.logger.info("xampp control panel started")
         except FileNotFoundError:
-            logger.error("XAMPP control panel executable file not found")
+            self.logger.error("XAMPP control panel executable file not found")
         except PermissionError:
-            logger.error("Insufficient permissions to execute XAMPP control panel")
+            self.logger.error("Insufficient permissions to execute XAMPP control panel")
 
         # wait 1 second after launching XAMPP to make sure that Apache and MySQL services
         # started if user has auto launch enabled in XAMPP config.
@@ -65,9 +66,9 @@ class EMSGui:
         # connect to the MySQL database using user credentials
         try:
             self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
-            logger.info('Database connection established to employee_db')
+            self.logger.info('Database connection established to employee_db')
         except mysql.connector.Error as err:
-            logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
+            self.logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
             self.xampp.terminate()
 
         # create the empty database and table, if they don't already exist
@@ -77,7 +78,7 @@ class EMSGui:
             self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
             self.mycursor.execute('USE employee_db')
         except mysql.connector.Error as err:
-            logger.error('Error while creating the database or table: ' + str(err))
+            self.logger.error('Error while creating the database: ' + str(err))
 
     def __create_gui(self):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
@@ -88,7 +89,7 @@ class EMSGui:
         try:
             self.main_window.iconphoto(True, PhotoImage(file='../res/icon.png'))
         except Exception as e:
-            logger.error(f"An error occurred: {e}")
+            self.logger.error(f"An error occurred: {e}")
 
         self.main_window.configure(background='lightgrey')  # app (GUI) background color
         self.main_window.title('EMS')  # app title
@@ -295,7 +296,7 @@ class EMSGui:
                 self.mydb.close()
                 connection_closed = True
         except mysql.connector.Error:
-            logger.error('Error closing db connection')
+            self.logger.error('Error closing db connection')
 
         # close xampp app
         self.xampp.terminate()
@@ -304,7 +305,7 @@ class EMSGui:
         self.main_window.destroy()
 
         if connection_closed:
-            logger.info('Employee application, xampp, and employee_db database connection successfully closed')
+            self.logger.info('Employee application, xampp, and employee_db database connection successfully closed')
 
     def __check_db_size(self):
         ''' attempts a select query on the db table to check if the database is empty. If we can't connect to the db because
@@ -328,7 +329,7 @@ class EMSGui:
         try:
             webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
         except webbrowser.Error:
-            logger.error("Failed to open DB website.")
+            self.logger.error("Failed to open DB website.")
 
     def __look_up_employee(self):
         ''' actions performed for when looking up an employee
@@ -364,7 +365,7 @@ class EMSGui:
             pay_rate = self.pay_rate_output_entry.get().strip()
             phone_number = self.phone_num_output_entry.get().strip()
         except ValueError as err:
-            logger.error('Exception caught: ' + str(err))
+            self.logger.error('Exception caught: ' + str(err))
             check = False
 
         if ID == 'Enter id...' or name == 'Enter name...' or dept == 'Enter dept...' or \
@@ -445,7 +446,7 @@ class EMSGui:
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
                 self.__clear_gui_entry_fields()
-                logger.error('Exception caught: ' + str(err))
+                self.logger.error('Exception caught: ' + str(err))
 
         # input validation: make sure no fields are blank and input of proper lengths is given
         elif '' in [ID, name, dept, title, pay_rate, phone_number, work_type] \
@@ -477,7 +478,7 @@ class EMSGui:
         try:
             ID = self.id_output_entry.get()
         except ValueError as err:
-            logger.error('Exception caught: ' + str(err))
+            self.logger.error('Exception caught: ' + str(err))
             check = False
 
         if ID in self.__employees:
@@ -569,7 +570,7 @@ class EMSGui:
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
             self.mydb.commit()
         except mysql.connector.Error as err:
-            logger.error('Exception caught: ' + str(err))
+            self.logger.error('Exception caught: ' + str(err))
 
         # to delete an employee, must be in db. Perform this check
         if ID in self.__employees:
@@ -699,22 +700,6 @@ class EMSGui:
         entry_widget.update()
         entry_widget.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
-
-# create log folder if it doesn't exist
-os.makedirs("../log", exist_ok=True)
-
-# setup and configure a custom logger
-logger = logging.getLogger("employee_logger")
-
-# create a console handler, set a custom formatter on the console handler, add the console handler to the logger
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
-logger.addHandler(console_handler)
-
-# create a file handler, set a custom formatter on the file handler to include current date in file name and be placed in log folder.
-# Add the file handler to the logger. Log file will override existing log file of same date
-file_handler = logging.FileHandler(os.path.join("../log", f'employee_manager.{datetime.now().strftime("%d_%m_%Y")}.log'), mode='w')
-logging.basicConfig(handlers=[file_handler], level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # defines the file to save the apps employee profiles to. The saved file can be loaded later
 SAVED_EMPLOYEES_DATA_FILE = '..\\Employees.dat'
