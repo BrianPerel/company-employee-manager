@@ -1,9 +1,9 @@
 '''
 Author @ Brian Perel
 GUI Employee Management System using XAMPP and mysql-connector module
--> Python UI program that will store information about employees in a company using a dictionary with add, remove, update, look up operations
--> Uses an employee class to set and get employee attributes
--> Program requires user to start XAMPP control panel (Apache server (to be able to reach phpadmin website)
+* Python UI program that will store information about employees in a company using a dictionary with add, remove, update, look up operations
+* Uses an employee class to set and get employee attributes
+* Program requires user to start XAMPP control panel (Apache server (to be able to reach phpadmin website)
 and MySQL (to be able to connect and perform database actions) modules)
 '''
 
@@ -52,15 +52,19 @@ class EMSGui:
         except PermissionError:
             logger.error("Insufficient permissions to execute XAMPP control panel")
 
+        # wait 1 second after launching XAMPP to make sure that Apache and MySQL services
+        # started if user has auto launch enabled in XAMPP config.
+        # This is to ensure that later when we attempt to connect to the
+        # database the service had enough time to start before doing this
+        time.sleep(1)
+
     def __start_db_connection(self):
         ''' actions to create and start the db connection
         '''
 
         # connect to the MySQL database using user credentials
         try:
-            # host='localhost', port=3306
-            self.mydb = mysql.connector.connect(
-            host='localhost', port=3306, user='root')
+            self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
             logger.info('Database connection established to employee_db')
         except mysql.connector.Error as err:
             logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
@@ -270,17 +274,12 @@ class EMSGui:
         self.main_window.protocol('WM_DELETE_WINDOW', self.__close_app)
 
     def __validate_entry(self, value):
-        # only allow up to 6 characters in ID and up to 4 characters in name
-        if self.main_window.focus_get() == self.id_output_entry:
+        # only allow up to 6 characters in ID or pay rate and up to 12 characters in name, dept, job title, or phone number fields
+        if self.main_window.focus_get() == self.id_output_entry or self.main_window.focus_get() == self.pay_rate_output_entry:
             return len(value) <= 6
-
         elif self.main_window.focus_get() in [self.name_output_entry, self.dept_output_entry,
                                               self.job_title_output_entry, self.phone_num_output_entry]:
             return len(value) <= 12
-
-        elif self.main_window.focus_get() == self.pay_rate_output_entry:
-            return len(value) <= 6
-
         else:
             return True
 
@@ -652,23 +651,17 @@ class EMSGui:
 
         for entry in entry_list:
             entry.update()
-            entry.config(foreground='grey')
-            entry.config(validate="key")
-            entry.config(validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+            entry.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
     def __on_hover(self, event):
         ''' when user hovers over a button, the button's background color and border width are changed to what is specified below
         '''
-
-        event.widget['bg'] = 'lightgrey'
-        event.widget['borderwidth'] = 3.8
+        event.widget.config(bg='lightgrey', borderwidth=3.8)
 
     def __on_leave(self, event):
         ''' when user stops hovers over a button, the button's background color and border width are changed to default values
         '''
-
-        event.widget['bg'] = 'SystemButtonFace'
-        event.widget['borderwidth'] = 3
+        event.widget.config(bg='SystemButtonFace', borderwidth=3)
 
     def __on_click(self, event):
         ''' erases the auto inserted GUI startup entry box text
@@ -676,9 +669,8 @@ class EMSGui:
 
         # sets the entry box's text to be black and deletes existing text
         event.widget.config(foreground='black')
-        event_widget = event.widget.get()
 
-        if event_widget in ['Enter id...', 'Enter name...', 'Enter dept...', 'Enter title...', 'Enter pay...', 'XXX-XXX-XXXX']:
+        if event.widget.get() in ['Enter id...', 'Enter name...', 'Enter dept...', 'Enter title...', 'Enter pay...', 'XXX-XXX-XXXX']:
             event.widget.delete(0, tk.END)
 
     def __focus_out(self, event, entry_widget):
@@ -708,25 +700,21 @@ class EMSGui:
         entry_widget.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
 
+# create log folder if it doesn't exist
+os.makedirs("../log", exist_ok=True)
+
 # setup and configure a custom logger
-logger = logging.getLogger("employee_logger") # create a custom logger
-logger.setLevel(logging.INFO) # set the logger's level to include INFO level logs
+logger = logging.getLogger("employee_logger")
 
 # create a console handler, set a custom formatter on the console handler, add the console handler to the logger
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
 logger.addHandler(console_handler)
 
-# create a file handler, set a custom formatter on the file handler, add the file handler to the logger. Log file will override existing log file of same date
-file_handler = logging.FileHandler(f'employee_manager.{datetime.now().strftime("%d_%m_%Y")}.log', mode='w')
-file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: %(message)s"))
-logger.addHandler(file_handler)
-
-# wait 1/2 a second after launching XAMPP to make sure that Apache and MySQL services
-# started if user has auto launch enabled in XAMPP config.
-# This is to ensure that later when we attempt to connect to the
-# database the service had enough time to start before doing this
-time.sleep(0.5)
+# create a file handler, set a custom formatter on the file handler to include current date in file name and be placed in log folder.
+# Add the file handler to the logger. Log file will override existing log file of same date
+file_handler = logging.FileHandler(os.path.join("../log", f'employee_manager.{datetime.now().strftime("%d_%m_%Y")}.log'), mode='w')
+logging.basicConfig(handlers=[file_handler], level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # defines the file to save the apps employee profiles to. The saved file can be loaded later
 SAVED_EMPLOYEES_DATA_FILE = '..\\Employees.dat'
