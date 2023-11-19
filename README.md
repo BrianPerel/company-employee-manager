@@ -5,8 +5,8 @@
 - NOTE: The app will require you to have XAMPP installed on your machine under the path `C:\xampp`.
 - You must set XAMPP config to auto start the Apache and MySQL services for the app to execute correctly
 
-- NOTE: In http://localhost/phpmyadmin/index.php under user accounts tab you will need to create a user
-account that matches the account listed in src code
+- NOTE: In http://localhost/phpmyadmin/index.php under user accounts tab you will need to create a db connection user
+account that matches the user listed in the src code which is `root`
 
 - NOTE: you must have Python's MySQL connector module installed to do development work
 if not, run the commands `pip install mysql-connector-python`

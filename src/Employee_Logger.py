@@ -18,7 +18,7 @@ class Employee_Logger:
 
         # create a file handler, set a custom formatter on the file handler to include current date in file name and be placed in log folder.
         # Add the file handler to the logger. Log file will override existing log file of same date
-        file_handler = logging.FileHandler(os.path.join("../log", f'employee_manager.{datetime.now().strftime("%d_%m_%Y")}.log'), mode='w')
+        file_handler = logging.FileHandler(os.path.join("../log", f'employee_manager.{datetime.now().strftime("%m_%d_%Y")}.log'), mode='w')
         logging.basicConfig(handlers=[file_handler], level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
         return logger

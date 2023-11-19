@@ -29,18 +29,20 @@ class EMSGui:
         self.__employees = {} # create empty dictionary
         self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
 
-        self.__start_xampp()
-        self.__start_db_connection()
-        self.__create_gui()
-        self.__check_db_size()
+        successful_launch = self.__start_xampp()
 
-        # create a new file only if file doesn't exist
-        if not os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
-            # create a new binary file to store binary object info, if one doesn't already exist in folder
-            file_obj = open(SAVED_EMPLOYEES_DATA_FILE, 'wb')
-            file_obj.close()
-        else:
-            self.__load_file()
+        if successful_launch:
+            self.__start_db_connection()
+            self.__create_gui()
+            self.__check_db_size()
+
+            # create a new file only if file doesn't exist
+            if not os.path.isfile(SAVED_EMPLOYEES_DATA_FILE) and os.access(SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
+                # create a new binary file to store binary object info, if one doesn't already exist in folder
+                file_obj = open(SAVED_EMPLOYEES_DATA_FILE, 'wb')
+                file_obj.close()
+            else:
+                self.__load_file()
 
     def __start_xampp(self):
         # start xampp control panel using the subprocess module
@@ -50,14 +52,20 @@ class EMSGui:
             self.logger.info("xampp control panel started")
         except FileNotFoundError:
             self.logger.error("XAMPP control panel executable file not found")
+            return False
         except PermissionError:
             self.logger.error("Insufficient permissions to execute XAMPP control panel")
+            return False
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"Error starting XAMPP control panel: {e}")
+            return False
 
         # wait 1 second after launching XAMPP to make sure that Apache and MySQL services
         # started if user has auto launch enabled in XAMPP config.
         # This is to ensure that later when we attempt to connect to the
         # database the service had enough time to start before doing this
         time.sleep(1)
+        return True
 
     def __start_db_connection(self):
         ''' actions to create and start the db connection
@@ -71,7 +79,7 @@ class EMSGui:
             self.logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
             self.xampp.terminate()
 
-        # create the empty database and table, if they don't already exist
+        # create the empty database, if it doesn't already exist
         try:
             # create a buffered cursor object for executing SQL queries on a MySQL database
             self.mycursor = self.mydb.cursor(buffered=True)
@@ -701,8 +709,8 @@ class EMSGui:
         entry_widget.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
 
-# defines the file to save the apps employee profiles to. The saved file can be loaded later
-SAVED_EMPLOYEES_DATA_FILE = '..\\Employees.dat'
+# defines the file to save the apps employee profiles to. The saved file can be loaded later and will contain the current date
+SAVED_EMPLOYEES_DATA_FILE = f'..\\employees.{datetime.now().strftime("%m_%d_%Y")}.dat'
 
 # create instance of EMSGui class
 app = EMSGui()
