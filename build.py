@@ -1,27 +1,36 @@
 import os
 import time
+import glob
 import shutil
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def __clean():
-    # if dist directory already exists, do a clean
+    # if dist or build directories already exists, do a clean
     dist_dir = os.path.join(current_dir, 'dist')
+    build_dir = os.path.join(current_dir, 'build')
 
     if os.path.exists(dist_dir):
         shutil.rmtree(dist_dir)
 
+    if os.path.exists(build_dir):
+        shutil.rmtree(build_dir)
+
 def __create_exe():
     output_dir = os.path.join(current_dir, 'dist', 'app')  # Specify the executable output directory path ('dist/app/')
+    source_files = glob.glob(os.path.join(current_dir, 'src', '*.py'))  # get a list of all Python files in the src directory
 
     cmd = (
-        f'pyinstaller --upx-dir=C:\\upx-4.0.2-win64 --noconsole --onefile ' # call the pyinstaller to package the python scripts using upx packager
+        f'start /min cmd /c pyinstaller --upx-dir=C:\\upx-4.0.2-win64 --noconsole --onefile ' # call the pyinstaller to package the python scripts using upx packager
         f'--distpath="{output_dir}" '  # set the output directory for generated exe
-        f'{current_dir}/src/Employee_Gui.py {current_dir}/src/Employee_Management_System.py ' # point to the python scripts to package
+        f'{" ".join(source_files)} ' # include all Python scripts from the src directory
         f'--icon={current_dir}/res/icon.ico --name "Employee Manager.exe"' # include the icon file which will appear as the custom file icon, and assign a name to the exe
     )
 
     os.system(cmd)
+
+    # added a wait here so that the above command prompt commands execute before other code outside this function is executed
+    time.sleep(8)
 
 def __move_res_files():
     output_dir = os.path.join(current_dir, 'dist')  # specify the output directory for the generated exe
