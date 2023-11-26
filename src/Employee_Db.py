@@ -1,0 +1,450 @@
+'''
+Author @ Brian Perel
+GUI Employee Management System using XAMPP and mysql-connector module
+* Python UI program that will store information about employees in a company using a dictionary with add, remove, update, look up operations
+* Uses an employee class to set and get employee attributes
+* Program requires user to start XAMPP control panel (Apache server (to be able to reach phpadmin website)
+and MySQL (to be able to connect and perform database actions) modules)
+'''
+
+from tkinter.constants import DISABLED, NORMAL
+import Employee_Management_System as EMS
+import tkinter.messagebox as messagebox
+import Employee_Logger as EMS_Logger
+from datetime import datetime
+import re as regular_exp
+import Employee_Gui as EMS_Gui
+import mysql.connector
+import subprocess
+import webbrowser
+import pickle
+import time
+import os
+
+class Employee_Db:
+
+    # print(__doc__)
+    def start_app(self):
+        self.__employees = {} # create empty dictionary
+
+        # defines the file to save the apps employee profiles to. The saved file can be loaded later and will contain the current date
+        self.SAVED_EMPLOYEES_DATA_FILE = f'..\\employees.{datetime.now().strftime("%m_%d_%Y")}.dat'
+
+        self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
+
+        successful_launch = self.__start_xampp()
+
+        if successful_launch:
+            self.__start_db_connection()
+
+            # create a new file only if file doesn't exist
+            if not os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
+                # create a new binary file to store binary object info, if one doesn't already exist in folder
+                file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'wb')
+                file_obj.close()
+            else:
+                self.__load_file()
+
+            self.gui = EMS_Gui.Employee_Gui(self.logger, employee_db_instance=self)
+
+    def __start_xampp(self):
+        # start xampp control panel using the subprocess module
+
+        try:
+            self.xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
+            self.logger.info("xampp control panel started")
+        except FileNotFoundError:
+            self.logger.error("XAMPP control panel executable file not found")
+            return False
+        except PermissionError:
+            self.logger.error("Insufficient permissions to execute XAMPP control panel")
+            return False
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"Error starting XAMPP control panel: {e}")
+            return False
+
+        # wait 1 second after launching XAMPP to make sure that Apache and MySQL services
+        # started if user has auto launch enabled in XAMPP config.
+        # This is to ensure that later when we attempt to connect to the
+        # database the service had enough time to start before doing this
+        time.sleep(1)
+        return True
+
+    def __start_db_connection(self):
+        ''' actions to create and start the db connection
+        '''
+
+        # connect to the MySQL database using user credentials
+        try:
+            self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
+            self.logger.info('Database connection established to employee_db')
+        except mysql.connector.Error as err:
+            self.logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
+            self.xampp.terminate()
+
+        # create the empty database, if it doesn't already exist
+        try:
+            # create a buffered cursor object for executing SQL queries on a MySQL database
+            self.mycursor = self.mydb.cursor(buffered=True)
+            self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
+            self.mycursor.execute('USE employee_db')
+        except mysql.connector.Error as err:
+            self.logger.error('Error while creating the database: ' + str(err))
+
+    def close_app(self, main_window):
+        ''' performs actions when closing the app
+        '''
+
+        connection_closed = False
+
+        # close MySQL connection if one exists
+        try:
+            if self.mydb is not None:
+                self.mycursor.close()
+                self.mydb.close()
+                connection_closed = True
+        except mysql.connector.Error:
+            self.logger.error('Error closing db connection')
+
+        # close xampp app
+        self.xampp.terminate()
+
+        # close gui window
+        main_window.destroy()
+
+        if connection_closed:
+            self.logger.info('Employee application, employee_db database connection, and xampp module successfully closed')
+
+    def check_db_size(self, employee_gui_instance):
+        ''' attempts a select query on the db table to check if the database is empty. If we can't connect to the db because
+            it doesn't yet exist or if the table is empty then start the GUI with these buttons disabled
+        '''
+
+        try:
+            self.mycursor.execute('SELECT * FROM employees')
+            rows = self.mycursor.fetchall()
+
+            if(len(rows)) == 0:
+                employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = DISABLED
+                if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
+                    os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
+        except mysql.connector.Error:
+                employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = DISABLED
+                if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
+                    os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
+
+    def open_db_website(self):
+        try:
+            webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
+        except webbrowser.Error:
+            self.logger.error("Failed to open DB website.")
+
+    def look_up_employee(self, employee_gui_instance):
+        ''' actions performed for when looking up an employee
+        '''
+
+        # function to look up an employee's info in dictionary, by the ID attained from GUI
+        # Get an employee ID number to look up.
+        ID = employee_gui_instance.id_output_entry.get()
+
+        # ternary operator
+        message = self.__employees.get(ID) if (ID in self.__employees) else 'No employee found under this ID'
+
+        # create a showinfo message box
+        messagebox.showinfo(title='Employee Info', message=str(message))
+
+        employee_gui_instance.clear_gui_entry_fields()
+
+    def add_employee(self, employee_gui_instance, check=True, work_type=''):
+        ''' actions for when adding an employee, add an employee to dictionary, by info gathered from GUI
+        '''
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
+                            Name VARCHAR(12), Department VARCHAR(12), \
+                            Title VARCHAR(12), Pay_Rate VARCHAR(6), \
+                            Phone_Number VARCHAR(12), \
+                            Work_Type VARCHAR(12))')
+
+        try:
+            date = str(datetime.now().strftime("%m-%d-%Y %I:%M %p")) # obtain current date and time and format it to be mm/dd/yyyy hh:tt am or pm
+            ID = employee_gui_instance.id_output_entry.get()
+            name = employee_gui_instance.name_output_entry.get().title().strip()
+            dept = employee_gui_instance.dept_output_entry.get().title().strip()
+            title = employee_gui_instance.job_title_output_entry.get().title().strip()
+            pay_rate = employee_gui_instance.pay_rate_output_entry.get().strip()
+            phone_number = employee_gui_instance.phone_num_output_entry.get().strip()
+        except ValueError as err:
+            self.logger.error('Exception caught: ' + str(err))
+            check = False
+
+        if ID == 'Enter id...' or name == 'Enter name...' or dept == 'Enter dept...' or \
+        title == 'Enter title...' or pay_rate == 'Enter pay...' or phone_number == 'XXX-XXX-XXXX' or \
+        not ID.isdigit() or len(pay_rate) == 0 or employee_gui_instance.radio_var.get() == 0:
+            check = False
+
+        # if user entered phone number without including dashes, manually attach them
+        if '-' not in phone_number:
+            phone_number = '{}-{}-{}'.format(phone_number[:3], phone_number[3:6], phone_number[6:])
+
+        formatted_phone_number_without_dashes = "".join((phone_number[:3], phone_number[4:7], phone_number[8:])).replace(" ", "")
+
+        for digit in formatted_phone_number_without_dashes:
+            if not digit.isdigit():
+                check = False
+                break
+
+        # use regular expressions to check format of info given
+        # name, dept, title should all only contain letters, if nums are contained then mark
+        pattern1 = regular_exp.match('[a-zA-Z]+', name)
+        pattern2 = regular_exp.match('[a-zA-Z]+', dept)
+        pattern3 = regular_exp.match('[a-zA-Z]+', title)
+        name_has_digit = any(digit.isdigit() for digit in name)
+        dept_has_digit = any(digit.isdigit() for digit in dept)
+        title_has_digit = any(digit.isdigit() for digit in title)
+
+        # value of 1 stands for part-time radio button option, 2 for full time option
+        if employee_gui_instance.radio_var.get() == 1:
+            work_type = 'Part time'
+        elif employee_gui_instance.radio_var.get() == 2:
+            work_type = 'Full time'
+
+        # make sure pay_rate field only accepts numbers
+        pay_rate_has_letters = any(digit.isalpha() for digit in pay_rate)
+
+        # add a $ to pay_rate before adding it to the database table
+        if '$' in pay_rate:
+            pay_rate = pay_rate.replace('$', '')
+
+        try:
+            # cast to float and format number, cast pay_rate back to string
+            if not pay_rate_has_letters and float(pay_rate) > 0:
+                pay_rate = '$' + str(format(float(pay_rate), '.2f'))
+            else:
+                check = False
+        except ValueError as err:
+            messagebox.showinfo(title='Info', message='Couldn\'t add employee.')
+            self.clear_gui_entry_fields()
+            return
+
+        # create instance and send the values
+        new_emp = EMS.Employee_Management_System(ID, name, dept, title, pay_rate, phone_number, work_type)
+
+        # conditional statement to add employee into dictionary
+        if ID not in self.__employees and len(phone_number) == 12 and check and len(ID) == 6 \
+           and '' not in [name, dept, title, pay_rate, phone_number, work_type] \
+           and pattern1 and pattern2 and pattern3 and not name_has_digit \
+           and not dept_has_digit and not title_has_digit:
+            self.__employees[ID] = new_emp
+            message = 'The new employee has been added'
+
+            # if db exists with at least 1 record in the table then enable these buttons
+            employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = NORMAL
+
+            # serialize the object
+            file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'ab')
+            pickle.dump(new_emp, file_obj)
+            file_obj.close()
+
+            # insert data into db table
+            try:
+                self.mycursor.execute('INSERT INTO employees (Employee_Creation_Date, ID, Name, Department, Title, \
+                Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s, %s)',
+                (date, ID, name, dept, title, pay_rate, phone_number, work_type))
+
+                self.mydb.commit() # commit the changes to the database
+            except mysql.connector.Error as err:
+                message = 'An employee with that ID already exists.'
+                employee_gui_instance.clear_gui_entry_fields()
+                self.logger.error('Exception caught: ' + str(err))
+
+        # input validation: make sure no fields are blank and input of proper lengths is given
+        elif '' in [ID, name, dept, title, pay_rate, phone_number, work_type] \
+             or not check or len(ID) != 6 or not pattern1 \
+             or not pattern2 or not pattern3 or name_has_digit \
+             or dept_has_digit or title_has_digit or (len(phone_number) != 12):
+            message = 'Couldn\'t add employee.'
+        elif ID in self.__employees:
+            message = 'An employee with that ID already exists.'
+
+        # show info message box with data
+        messagebox.showinfo(title='Info', message=message)
+
+        employee_gui_instance.clear_gui_entry_fields()
+
+    def update_employee(self, employee_gui_instance, check=True, message='', work_type = ''):
+        ''' actions performed to update an employee's data in the app by attaining info from GUI and
+            updating an already existing employee's info in the dictionary
+        '''
+
+        # create the empty database and table
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
+                    Name VARCHAR(12), Department VARCHAR(12), \
+                    Title VARCHAR(12), Pay_Rate VARCHAR(6), \
+                    Phone_Number VARCHAR(12), \
+                    Work_Type VARCHAR(12))')
+
+        # get values from entry box widget
+        try:
+            ID = employee_gui_instance.id_output_entry.get()
+        except ValueError as err:
+            self.logger.error('Exception caught: ' + str(err))
+            check = False
+
+        if ID in self.__employees:
+            name = employee_gui_instance.name_output_entry.get().title().strip()
+            dept = employee_gui_instance.dept_output_entry.get().title().strip()
+            title = employee_gui_instance.job_title_output_entry.get().title().strip()
+            pay_rate = employee_gui_instance.pay_rate_output_entry.get().strip()
+            phone_number = employee_gui_instance.phone_num_output_entry.get().strip()
+
+            # if user entered phone number without including dashes, manually attach them
+            if '-' not in phone_number:
+                phone_number = '{}-{}-{}'.format(phone_number[:3], phone_number[3:6], phone_number[6:])
+
+            formatted_phone_number_without_dashes = "".join((phone_number[:3], phone_number[4:7], phone_number[8:])).replace(" ", "")
+
+            for digit in formatted_phone_number_without_dashes:
+                if not digit.isdigit():
+                    check = False
+                    break
+
+            # use regular expressions to check format of info given
+            # name, dept, title should all only contain letters, if nums are contained then mark
+            pattern1 = regular_exp.match('[a-zA-Z]+', name)
+            pattern2 = regular_exp.match('[a-zA-Z]+', dept)
+            pattern3 = regular_exp.match('[a-zA-Z]+', title)
+            name_has_digit = any(digit.isdigit() for digit in name)
+            dept_has_digit = any(digit.isdigit() for digit in dept)
+            title_has_digit = any(digit.isdigit() for digit in title)
+
+            # make sure pay_rate field only accepts numbers
+            pay_rate_has_letters = any(digit.isalpha() for digit in pay_rate)
+
+            # add a $ to pay_rate before adding it to the database table
+            if '$' in pay_rate:
+                pay_rate = pay_rate.replace('$', '')
+
+            try:
+                # cast to float and format number, cast pay_rate back to string
+                if not pay_rate_has_letters and float(pay_rate) > 0:
+                    pay_rate = '$' + str(format(float(pay_rate), '.2f'))
+                else:
+                    check = False
+            except ValueError as err:
+                messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                employee_gui_instance.clear_gui_entry_fields()
+                return
+
+            # create radio buttons: 0 is representative of when neither is selected, 1 is for first circle, 2 is for second circle
+            if employee_gui_instance.radio_var.get() == 0 or len(phone_number) != 12 or not check \
+            or '' in [name, dept, title, pay_rate, phone_number] or not pattern1 \
+            or name_has_digit or not pattern2 or dept_has_digit or not pattern3 \
+            or title_has_digit or pay_rate_has_letters:
+                messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                employee_gui_instance.clear_gui_entry_fields()
+                return
+            elif employee_gui_instance.radio_var.get() == 1:
+                work_type = 'Part time'
+            elif employee_gui_instance.radio_var.get() == 2:
+                work_type = 'Full time'
+
+            # store employee object in employee dictionary, the dictionary's key is the employee's ID
+            self.__employees[ID] = EMS.Employee_Management_System(ID, name, dept, \
+                                    title, pay_rate, phone_number, work_type)
+
+            check = 'SELECT * FROM employees WHERE ID = %s'
+            self.mycursor.execute(check, (ID,))  # execute sql statement with above statement as arg
+
+            self.mycursor.execute('UPDATE employees SET Name=%s, Department=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s',
+                    (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}'))
+            self.mydb.commit()
+
+            message = 'The employee has been updated'
+
+        elif ID not in self.__employees:
+            message = 'No employee found under this ID'
+
+        messagebox.showinfo(title='Info', message=message)
+
+        employee_gui_instance.clear_gui_entry_fields()
+
+    def delete_employee(self, employee_gui_instance):
+        ''' deletes the employee from the app by locating it by ID in dictionary
+        '''
+
+        # get values from entry box widget
+        ID = employee_gui_instance.id_output_entry.get()
+
+        try:
+            self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
+            self.mydb.commit()
+        except mysql.connector.Error as err:
+            self.logger.error('Exception caught: ' + str(err))
+
+        # to delete an employee, must be in db. Perform this check
+        if ID in self.__employees:
+            del self.__employees[ID]
+            message = 'Employee deleted'
+        else:
+            message = 'The specified ID number was not found'
+
+        messagebox.showinfo(title='Info', message=message)
+
+        employee_gui_instance.clear_gui_entry_fields()
+        self.check_db_size(employee_gui_instance)
+
+    def reset_system(self, employee_gui_instance):
+        ''' actions performed to reset the app - deletes app memory, db, and .dat file
+        '''
+
+        if messagebox.askquestion(title='Reset System', message='Are you sure you want to delete everything in your employee database?') == 'yes':
+            # function to reset app data, in case company leaves. This will delete all data in app and the whole database
+            self.__employees = {}
+
+            try:
+                self.mycursor.execute('DROP TABLE employees')
+
+                if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
+                    os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
+
+                messagebox.showinfo(title='Info', message='System has been reset: database table and ' + self.SAVED_EMPLOYEES_DATA_FILE[3:] + ' deleted')
+            except mysql.connector.Error as err:
+                messagebox.showerror(title='Info', message='Database not found, file not found\n' + str(err))
+            except FileNotFoundError as err:
+                messagebox.showerror(title='Info', message='.dat data file not found\n' + str(err))
+
+            employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = DISABLED
+
+        employee_gui_instance.clear_gui_entry_fields()
+
+    def __load_file(self):
+        ''' actions performed for when loading the .dat binary data file into the app. Data is automatically saved from the last time app is used
+        '''
+
+        try:
+            if os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK) \
+                and os.stat(self.SAVED_EMPLOYEES_DATA_FILE).st_size != 0:
+                file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'rb')
+                content = pickle.load(file_obj)
+
+                try:
+                    while content != ' ':
+                        ID = content.get_id_number()
+                        if ID not in self.__employees:
+                            self.__employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
+                                     content.get_title(), content.get_pay_rate(),
+                                     content.get_phone_number(), content.get_work_type())
+
+                        content = pickle.load(file_obj)
+
+                    file_obj.close()
+
+                except EOFError as err:
+                    content = []
+
+        except FileNotFoundError as err:
+            messagebox.showerror(title='Info', message='File not found\n' + str(err))
+
+
+# create instance of EMSGui class
+app = Employee_Db()
+app.start_app()
