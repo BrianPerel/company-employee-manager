@@ -10,66 +10,24 @@ and MySQL (to be able to connect and perform database actions) modules)
 from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
-import Employee_Logger as EMS_Logger
 from tzlocal import get_localzone
 from datetime import datetime
-import Employee_Gui as EMS_Gui
 import re as regular_exp
 import mysql.connector
-import subprocess
 import webbrowser
 import pickle
-import time
 import os
 
 class Employee_Db:
 
     # print(__doc__)
-    def start_app(self):
-        self.__employees = {} # create empty dictionary
+    def __init__(self, SAVED_EMPLOYEES_DATA_FILE, logger, xampp, employees):
+        self.SAVED_EMPLOYEES_DATA_FILE = SAVED_EMPLOYEES_DATA_FILE
+        self.employees = employees
+        self.logger = logger
+        self.xampp = xampp
 
-        # defines the file to save the apps employee profiles to. The saved file can be loaded later and will contain the current date
-        self.SAVED_EMPLOYEES_DATA_FILE = f'..\\employees.{datetime.now().strftime("%m_%d_%Y")}.dat'
-
-        self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
-
-        successful_launch = self.__start_xampp()
-
-        if successful_launch:
-            self.__start_db_connection()
-
-            # create a new file only if file doesn't exist
-            if not os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK):
-                # create a new binary file to store binary object info, if one doesn't already exist in folder
-                file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'wb')
-                file_obj.close()
-            else:
-                self.__load_file()
-
-            self.gui = EMS_Gui.Employee_Gui(self.logger, db=self)
-
-    def __start_xampp(self):
-        # start xampp control panel using the subprocess module
-
-        try:
-            self.xampp = subprocess.Popen('C:\\xampp\\xampp-control.exe')
-            self.logger.info("xampp control panel started")
-        except FileNotFoundError:
-            self.logger.error("XAMPP control panel executable file not found")
-            return False
-        except PermissionError:
-            self.logger.error("Insufficient permissions to execute XAMPP control panel")
-            return False
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Error starting XAMPP control panel: {e}")
-            return False
-
-        # wait 1 second after launching XAMPP to make sure that Apache and MySQL services
-        # started if user has auto launch enabled in XAMPP config.
-        # This is to ensure that later when we attempt to connect to the
-        # database the service had enough time to start before doing this
-        time.sleep(1)
-        return True
+        self.__start_db_connection()
 
     def __start_db_connection(self):
         ''' actions to create and start the db connection
@@ -80,7 +38,7 @@ class Employee_Db:
             self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
             self.logger.info('Database connection established to "employee_db" using username "root"')
         except mysql.connector.Error as err:
-            self.logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
+            self.logger.error('Exception caught: ' + str(err) + '\nTerminating xampp control panel')
             self.xampp.terminate()
 
         # create the empty database, if it doesn't already exist
@@ -149,7 +107,7 @@ class Employee_Db:
         ID = gui.id_output_entry.get()
 
         # ternary operator
-        message = self.__employees.get(ID) if (ID in self.__employees) else 'No employee found under this ID'
+        message = self.employees.get(ID) if (ID in self.employees) else 'No employee found under this ID'
 
         # create a showinfo message box
         messagebox.showinfo(title='Employee Info', message=str(message))
@@ -202,12 +160,6 @@ class Employee_Db:
         dept_has_digit = any(digit.isdigit() for digit in dept)
         title_has_digit = any(digit.isdigit() for digit in title)
 
-        # value of 1 stands for part-time radio button option, 2 for full time option
-        if gui.radio_var.get() == 1:
-            work_type = 'Part time'
-        elif gui.radio_var.get() == 2:
-            work_type = 'Full time'
-
         # make sure pay_rate field only accepts numbers
         pay_rate_has_letters = any(digit.isalpha() for digit in pay_rate)
 
@@ -223,18 +175,24 @@ class Employee_Db:
                 check = False
         except ValueError as err:
             messagebox.showinfo(title='Info', message='Couldn\'t add employee.')
-            self.clear_gui_entry_fields()
+            gui.clear_gui_entry_fields()
             return
+
+        # value of 1 stands for part-time radio button option, 2 for full time option
+        if gui.radio_var.get() == 1:
+            work_type = 'Part time'
+        elif gui.radio_var.get() == 2:
+            work_type = 'Full time'
 
         # create instance and send the values
         new_emp = EMS.Employee_Management_System(ID, name, dept, title, pay_rate, phone_number, work_type)
 
         # conditional statement to add employee into dictionary
-        if ID not in self.__employees and len(phone_number) == 12 and check and len(ID) == 6 \
+        if ID not in self.employees and len(phone_number) == 12 and check and len(ID) == 6 \
            and '' not in [name, dept, title, pay_rate, phone_number, work_type] \
            and pattern1 and pattern2 and pattern3 and not name_has_digit \
            and not dept_has_digit and not title_has_digit:
-            self.__employees[ID] = new_emp
+            self.employees[ID] = new_emp
             message = 'The new employee has been added'
 
             # if db exists with at least 1 record in the table then enable these buttons
@@ -263,7 +221,7 @@ class Employee_Db:
              or not pattern2 or not pattern3 or name_has_digit \
              or dept_has_digit or title_has_digit or (len(phone_number) != 12):
             message = 'Couldn\'t add employee.'
-        elif ID in self.__employees:
+        elif ID in self.employees:
             message = 'An employee with that ID already exists.'
 
         # show info message box with data
@@ -289,7 +247,7 @@ class Employee_Db:
             self.logger.error('Exception caught: ' + str(err))
             check = False
 
-        if ID in self.__employees:
+        if ID in self.employees:
             name = gui.name_output_entry.get().title().strip()
             dept = gui.dept_output_entry.get().title().strip()
             title = gui.job_title_output_entry.get().title().strip()
@@ -348,19 +306,17 @@ class Employee_Db:
                 work_type = 'Full time'
 
             # store employee object in employee dictionary, the dictionary's key is the employee's ID
-            self.__employees[ID] = EMS.Employee_Management_System(ID, name, dept, \
+            self.employees[ID] = EMS.Employee_Management_System(ID, name, dept, \
                                     title, pay_rate, phone_number, work_type)
 
-            check = 'SELECT * FROM employees WHERE ID = %s'
-            self.mycursor.execute(check, (ID,))  # execute sql statement with above statement as arg
-
+            self.mycursor.execute('SELECT * FROM employees WHERE ID = %s', (ID,))  # execute sql statement with above statement as arg
             self.mycursor.execute('UPDATE employees SET Name=%s, Department=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s',
                     (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}'))
             self.mydb.commit()
 
             message = 'The employee has been updated'
 
-        elif ID not in self.__employees:
+        elif ID not in self.employees:
             message = 'No employee found under this ID'
 
         messagebox.showinfo(title='Info', message=message)
@@ -381,8 +337,8 @@ class Employee_Db:
             self.logger.error('Exception caught: ' + str(err))
 
         # to delete an employee, must be in db. Perform this check
-        if ID in self.__employees:
-            del self.__employees[ID]
+        if ID in self.employees:
+            del self.employees[ID]
             message = 'Employee deleted'
         else:
             message = 'The specified ID number was not found'
@@ -398,7 +354,7 @@ class Employee_Db:
 
         if messagebox.askquestion(title='Reset System', message='Are you sure you want to delete everything in your employee database?') == 'yes':
             # function to reset app data, in case company leaves. This will delete all data in app and the whole database
-            self.__employees = {}
+            self.employees = {}
 
             try:
                 self.mycursor.execute('DROP TABLE employees')
@@ -415,36 +371,3 @@ class Employee_Db:
             gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
 
         gui.clear_gui_entry_fields()
-
-    def __load_file(self):
-        ''' actions performed for when loading the .dat binary data file into the app. Data is automatically saved from the last time app is used
-        '''
-
-        try:
-            if os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK) \
-                and os.stat(self.SAVED_EMPLOYEES_DATA_FILE).st_size != 0:
-                file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'rb')
-                content = pickle.load(file_obj)
-
-                try:
-                    while content != ' ':
-                        ID = content.get_id_number()
-                        if ID not in self.__employees:
-                            self.__employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
-                                     content.get_title(), content.get_pay_rate(),
-                                     content.get_phone_number(), content.get_work_type())
-
-                        content = pickle.load(file_obj)
-
-                    file_obj.close()
-
-                except EOFError as err:
-                    content = []
-
-        except FileNotFoundError as err:
-            messagebox.showerror(title='Info', message='File not found\n' + str(err))
-
-
-# create instance of EMSGui class
-app = Employee_Db()
-app.start_app()
