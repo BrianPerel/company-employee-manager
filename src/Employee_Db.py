@@ -11,9 +11,10 @@ from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
 import Employee_Logger as EMS_Logger
+from tzlocal import get_localzone
 from datetime import datetime
-import re as regular_exp
 import Employee_Gui as EMS_Gui
+import re as regular_exp
 import mysql.connector
 import subprocess
 import webbrowser
@@ -45,7 +46,7 @@ class Employee_Db:
             else:
                 self.__load_file()
 
-            self.gui = EMS_Gui.Employee_Gui(self.logger, employee_db_instance=self)
+            self.gui = EMS_Gui.Employee_Gui(self.logger, db=self)
 
     def __start_xampp(self):
         # start xampp control panel using the subprocess module
@@ -77,7 +78,7 @@ class Employee_Db:
         # connect to the MySQL database using user credentials
         try:
             self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
-            self.logger.info('Database connection established to employee_db')
+            self.logger.info('Database connection established to "employee_db" using username "root"')
         except mysql.connector.Error as err:
             self.logger.error('Exception caught: ' + str(err) + '\n. Terminating xampp control panel')
             self.xampp.terminate()
@@ -115,7 +116,7 @@ class Employee_Db:
         if connection_closed:
             self.logger.info('Employee application, employee_db database connection, and xampp module successfully closed')
 
-    def check_db_size(self, employee_gui_instance):
+    def check_db_size(self, gui):
         ''' attempts a select query on the db table to check if the database is empty. If we can't connect to the db because
             it doesn't yet exist or if the table is empty then start the GUI with these buttons disabled
         '''
@@ -125,11 +126,11 @@ class Employee_Db:
             rows = self.mycursor.fetchall()
 
             if(len(rows)) == 0:
-                employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = DISABLED
+                gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
                 if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
                     os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
         except mysql.connector.Error:
-                employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = DISABLED
+                gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
                 if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
                     os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
 
@@ -139,13 +140,13 @@ class Employee_Db:
         except webbrowser.Error:
             self.logger.error("Failed to open DB website.")
 
-    def look_up_employee(self, employee_gui_instance):
+    def look_up_employee(self, gui):
         ''' actions performed for when looking up an employee
         '''
 
         # function to look up an employee's info in dictionary, by the ID attained from GUI
         # Get an employee ID number to look up.
-        ID = employee_gui_instance.id_output_entry.get()
+        ID = gui.id_output_entry.get()
 
         # ternary operator
         message = self.__employees.get(ID) if (ID in self.__employees) else 'No employee found under this ID'
@@ -153,32 +154,32 @@ class Employee_Db:
         # create a showinfo message box
         messagebox.showinfo(title='Employee Info', message=str(message))
 
-        employee_gui_instance.clear_gui_entry_fields()
+        gui.clear_gui_entry_fields()
 
-    def add_employee(self, employee_gui_instance, check=True, work_type=''):
+    def add_employee(self, gui, check=True, work_type=''):
         ''' actions for when adding an employee, add an employee to dictionary, by info gathered from GUI
         '''
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(50), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
                             Name VARCHAR(12), Department VARCHAR(12), \
                             Title VARCHAR(12), Pay_Rate VARCHAR(6), \
                             Phone_Number VARCHAR(12), \
                             Work_Type VARCHAR(12))')
 
         try:
-            date = str(datetime.now().strftime("%m-%d-%Y %I:%M %p")) # obtain current date and time and format it to be mm/dd/yyyy hh:tt am or pm
-            ID = employee_gui_instance.id_output_entry.get()
-            name = employee_gui_instance.name_output_entry.get().title().strip()
-            dept = employee_gui_instance.dept_output_entry.get().title().strip()
-            title = employee_gui_instance.job_title_output_entry.get().title().strip()
-            pay_rate = employee_gui_instance.pay_rate_output_entry.get().strip()
-            phone_number = employee_gui_instance.phone_num_output_entry.get().strip()
+            date = str(datetime.now(get_localzone()).strftime("%m-%d-%Y %I:%M %p %Z")) # obtain current date and time and format it to be mm/dd/yyyy hh:tt am or pm
+            ID = gui.id_output_entry.get()
+            name = gui.name_output_entry.get().title().strip()
+            dept = gui.dept_output_entry.get().title().strip()
+            title = gui.job_title_output_entry.get().title().strip()
+            pay_rate = gui.pay_rate_output_entry.get().strip()
+            phone_number = gui.phone_num_output_entry.get().strip()
         except ValueError as err:
             self.logger.error('Exception caught: ' + str(err))
             check = False
 
         if ID == 'Enter id...' or name == 'Enter name...' or dept == 'Enter dept...' or \
         title == 'Enter title...' or pay_rate == 'Enter pay...' or phone_number == 'XXX-XXX-XXXX' or \
-        not ID.isdigit() or len(pay_rate) == 0 or employee_gui_instance.radio_var.get() == 0:
+        not ID.isdigit() or len(pay_rate) == 0 or gui.radio_var.get() == 0:
             check = False
 
         # if user entered phone number without including dashes, manually attach them
@@ -194,17 +195,17 @@ class Employee_Db:
 
         # use regular expressions to check format of info given
         # name, dept, title should all only contain letters, if nums are contained then mark
-        pattern1 = regular_exp.match('[a-zA-Z]+', name)
-        pattern2 = regular_exp.match('[a-zA-Z]+', dept)
-        pattern3 = regular_exp.match('[a-zA-Z]+', title)
+        pattern1 = regular_exp.match('^[a-zA-Z]+$', name)
+        pattern2 = regular_exp.match('^[a-zA-Z]+$', dept)
+        pattern3 = regular_exp.match('^[a-zA-Z]+$', title)
         name_has_digit = any(digit.isdigit() for digit in name)
         dept_has_digit = any(digit.isdigit() for digit in dept)
         title_has_digit = any(digit.isdigit() for digit in title)
 
         # value of 1 stands for part-time radio button option, 2 for full time option
-        if employee_gui_instance.radio_var.get() == 1:
+        if gui.radio_var.get() == 1:
             work_type = 'Part time'
-        elif employee_gui_instance.radio_var.get() == 2:
+        elif gui.radio_var.get() == 2:
             work_type = 'Full time'
 
         # make sure pay_rate field only accepts numbers
@@ -237,7 +238,7 @@ class Employee_Db:
             message = 'The new employee has been added'
 
             # if db exists with at least 1 record in the table then enable these buttons
-            employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = NORMAL
+            gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = NORMAL
 
             # serialize the object
             file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'ab')
@@ -253,7 +254,7 @@ class Employee_Db:
                 self.mydb.commit() # commit the changes to the database
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
-                employee_gui_instance.clear_gui_entry_fields()
+                gui.clear_gui_entry_fields()
                 self.logger.error('Exception caught: ' + str(err))
 
         # input validation: make sure no fields are blank and input of proper lengths is given
@@ -268,33 +269,32 @@ class Employee_Db:
         # show info message box with data
         messagebox.showinfo(title='Info', message=message)
 
-        employee_gui_instance.clear_gui_entry_fields()
+        gui.clear_gui_entry_fields()
 
-    def update_employee(self, employee_gui_instance, check=True, message='', work_type = ''):
+    def update_employee(self, gui, check=True, message='', work_type = ''):
         ''' actions performed to update an employee's data in the app by attaining info from GUI and
             updating an already existing employee's info in the dictionary
         '''
 
-        # create the empty database and table
         self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
-                    Name VARCHAR(12), Department VARCHAR(12), \
-                    Title VARCHAR(12), Pay_Rate VARCHAR(6), \
-                    Phone_Number VARCHAR(12), \
-                    Work_Type VARCHAR(12))')
+                            Name VARCHAR(12), Department VARCHAR(12), \
+                            Title VARCHAR(12), Pay_Rate VARCHAR(6) "Rate per hour", \
+                            Phone_Number VARCHAR(12), \
+                            Work_Type VARCHAR(12) "Full time or part time")')
 
         # get values from entry box widget
         try:
-            ID = employee_gui_instance.id_output_entry.get()
+            ID = gui.id_output_entry.get()
         except ValueError as err:
             self.logger.error('Exception caught: ' + str(err))
             check = False
 
         if ID in self.__employees:
-            name = employee_gui_instance.name_output_entry.get().title().strip()
-            dept = employee_gui_instance.dept_output_entry.get().title().strip()
-            title = employee_gui_instance.job_title_output_entry.get().title().strip()
-            pay_rate = employee_gui_instance.pay_rate_output_entry.get().strip()
-            phone_number = employee_gui_instance.phone_num_output_entry.get().strip()
+            name = gui.name_output_entry.get().title().strip()
+            dept = gui.dept_output_entry.get().title().strip()
+            title = gui.job_title_output_entry.get().title().strip()
+            pay_rate = gui.pay_rate_output_entry.get().strip()
+            phone_number = gui.phone_num_output_entry.get().strip()
 
             # if user entered phone number without including dashes, manually attach them
             if '-' not in phone_number:
@@ -331,20 +331,20 @@ class Employee_Db:
                     check = False
             except ValueError as err:
                 messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
-                employee_gui_instance.clear_gui_entry_fields()
+                gui.clear_gui_entry_fields()
                 return
 
             # create radio buttons: 0 is representative of when neither is selected, 1 is for first circle, 2 is for second circle
-            if employee_gui_instance.radio_var.get() == 0 or len(phone_number) != 12 or not check \
+            if gui.radio_var.get() == 0 or len(phone_number) != 12 or not check \
             or '' in [name, dept, title, pay_rate, phone_number] or not pattern1 \
             or name_has_digit or not pattern2 or dept_has_digit or not pattern3 \
             or title_has_digit or pay_rate_has_letters:
                 messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
-                employee_gui_instance.clear_gui_entry_fields()
+                gui.clear_gui_entry_fields()
                 return
-            elif employee_gui_instance.radio_var.get() == 1:
+            elif gui.radio_var.get() == 1:
                 work_type = 'Part time'
-            elif employee_gui_instance.radio_var.get() == 2:
+            elif gui.radio_var.get() == 2:
                 work_type = 'Full time'
 
             # store employee object in employee dictionary, the dictionary's key is the employee's ID
@@ -365,14 +365,14 @@ class Employee_Db:
 
         messagebox.showinfo(title='Info', message=message)
 
-        employee_gui_instance.clear_gui_entry_fields()
+        gui.clear_gui_entry_fields()
 
-    def delete_employee(self, employee_gui_instance):
+    def delete_employee(self, gui):
         ''' deletes the employee from the app by locating it by ID in dictionary
         '''
 
         # get values from entry box widget
-        ID = employee_gui_instance.id_output_entry.get()
+        ID = gui.id_output_entry.get()
 
         try:
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
@@ -389,10 +389,10 @@ class Employee_Db:
 
         messagebox.showinfo(title='Info', message=message)
 
-        employee_gui_instance.clear_gui_entry_fields()
-        self.check_db_size(employee_gui_instance)
+        gui.clear_gui_entry_fields()
+        self.check_db_size(gui)
 
-    def reset_system(self, employee_gui_instance):
+    def reset_system(self, gui):
         ''' actions performed to reset the app - deletes app memory, db, and .dat file
         '''
 
@@ -412,9 +412,9 @@ class Employee_Db:
             except FileNotFoundError as err:
                 messagebox.showerror(title='Info', message='.dat data file not found\n' + str(err))
 
-            employee_gui_instance.reset_button['state'] = employee_gui_instance.delete_emp_button['state'] = employee_gui_instance.update_emp_button['state'] = employee_gui_instance.look_up_emp_button['state'] = DISABLED
+            gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
 
-        employee_gui_instance.clear_gui_entry_fields()
+        gui.clear_gui_entry_fields()
 
     def __load_file(self):
         ''' actions performed for when loading the .dat binary data file into the app. Data is automatically saved from the last time app is used

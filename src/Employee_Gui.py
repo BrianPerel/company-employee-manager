@@ -3,15 +3,15 @@ from tkinter import PhotoImage
 
 class Employee_Gui:
 
-    def __init__(self, logger, employee_db_instance):
+    def __init__(self, logger, db):
         self.logger = logger
-        self.__create_gui(employee_db_instance)
-        employee_db_instance.check_db_size(employee_gui_instance=self)
+        self.__create_gui(db)
+        db.check_db_size(gui=self)
         self.clear_gui_entry_fields()
 
         self.main_window.mainloop()
 
-    def __create_gui(self, employee_db_instance):
+    def __create_gui(self, db):
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
 
         self.main_window = tk.Tk()  # make the GUI window
@@ -64,7 +64,7 @@ class Employee_Gui:
 
         # GUI button 1
         self.look_up_emp_button = tk.Button(text='Look Up Employee',
-                    command=lambda: employee_db_instance.look_up_employee(employee_gui_instance=self), bg='SystemButtonFace')
+                    command=lambda: db.look_up_employee(gui=self), bg='SystemButtonFace')
 
         # create label
         self.enter_name_label = tk.Label(text='\tName:', font=('Courier', 10),
@@ -77,7 +77,7 @@ class Employee_Gui:
                     validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
         # GUI button (update employee)
-        self.update_emp_button = tk.Button(text='Update Employee', command=lambda: employee_db_instance.update_employee(employee_gui_instance=self))
+        self.update_emp_button = tk.Button(text='Update Employee', command=lambda: db.update_employee(gui=self))
 
         self.enter_dept_label = tk.Label(text='\tDepartment:', font=('Courier', 10),
                                                        bg='lightgrey')
@@ -89,7 +89,7 @@ class Employee_Gui:
                     validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
         # GUI buttons (delete employee)
-        self.delete_emp_button = tk.Button(text='Delete Employee', command=lambda: employee_db_instance.delete_employee(employee_gui_instance=self))
+        self.delete_emp_button = tk.Button(text='Delete Employee', command=lambda: db.delete_employee(gui=self))
 
         # display formatted label
         self.enter_title_label = tk.Label(text='\tTitle:', font=('Courier', 10),
@@ -103,7 +103,7 @@ class Employee_Gui:
 
         # Opens xampp's MySQL module's admin website via direct link
         self.visit_db_button = tk.Button(text='Visit DB website',
-                    command=employee_db_instance.open_db_website)
+                    command=db.open_db_website)
 
         # take entry box variable and perform action
         self.pay_rate_output_entry = tk.Entry(width=15,
@@ -129,7 +129,7 @@ class Employee_Gui:
                         validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
         # GUI formatted buttons, call appropriate method when clicked
-        self.reset_button = tk.Button(text='Reset System', command=lambda: employee_db_instance.reset_system(employee_gui_instance=self))
+        self.reset_button = tk.Button(text='Reset System', command=lambda: db.reset_system(gui=self))
 
         # reset radio button variable to blank option (0)
         self.radio_var.set(0)
@@ -143,7 +143,7 @@ class Employee_Gui:
                                     bg='lightgrey', value=2, cursor='hand2')
 
         # GUI button
-        self.add_emp_button = tk.Button(text='Add New Employee', command=lambda: employee_db_instance.add_employee(employee_gui_instance=self))
+        self.add_emp_button = tk.Button(text='Add New Employee', command=lambda: db.add_employee(gui=self))
 
         buttons = [self.look_up_emp_button, self.add_emp_button, self.update_emp_button,
                    self.delete_emp_button, self.reset_button, self.visit_db_button]
@@ -203,7 +203,7 @@ class Employee_Gui:
             entry.bind('<FocusOut>', lambda event, entry=entry: self.__focus_out(event, entry))
 
         # listens for when 'x' exit button is pressed and routes to __close_app
-        self.main_window.protocol('WM_DELETE_WINDOW', lambda: employee_db_instance.close_app(self.main_window))
+        self.main_window.protocol('WM_DELETE_WINDOW', lambda: db.close_app(self.main_window))
 
     def __validate_entry(self, value):
         # only allow up to 6 characters in ID or pay rate and up to 12 characters in name, dept, job title, or phone number fields
