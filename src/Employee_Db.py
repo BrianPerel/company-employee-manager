@@ -278,9 +278,9 @@ class Employee_Db:
 
         self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
                             Name VARCHAR(12), Department VARCHAR(12), \
-                            Title VARCHAR(12), Pay_Rate VARCHAR(6) "Rate per hour", \
+                            Title VARCHAR(12), Pay_Rate VARCHAR(6), \
                             Phone_Number VARCHAR(12), \
-                            Work_Type VARCHAR(12) "Full time or part time")')
+                            Work_Type VARCHAR(12))')
 
         # get values from entry box widget
         try:
