@@ -4,7 +4,9 @@
 
 - The app will require you to have XAMPP installed on your machine under the path `C:\xampp`.
 - You must set XAMPP config to auto start the Apache and MySQL services for the app to execute correctly
-- The database will be created by the app
+
+- The mysql database will be created by the app, we will use the default auto created admin user `root`
+- A local backup .dat data file will be created and updated by the app
 
 - To create the .exe: run the build.py script which will generate a new dist folder with the icon and exe files
 

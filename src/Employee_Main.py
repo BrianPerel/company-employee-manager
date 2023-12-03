@@ -63,26 +63,25 @@ class Employee_Main:
         '''
 
         try:
-            if os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK) \
-                and os.stat(self.SAVED_EMPLOYEES_DATA_FILE).st_size != 0:
-
+            # only attempt to open the data file if the file has read permission and is not empty
+            if os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK) and os.stat(self.SAVED_EMPLOYEES_DATA_FILE).st_size != 0:
                 file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'rb')
-                content = pickle.load(file_obj)
 
-                try:
-                    while content != ' ':
+                while True:
+                    try:
+                        # obtain the next (or first) object (employee) of the data file
+                        content = pickle.load(file_obj)
+
                         ID = content.get_id_number()
                         if ID not in self.employees:
                             self.employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
                                      content.get_title(), content.get_pay_rate(),
                                      content.get_phone_number(), content.get_work_type())
 
-                        content = pickle.load(file_obj)
+                    except EOFError as err:
+                        break
 
-                    file_obj.close()
-
-                except EOFError as err:
-                    content = []
+                file_obj.close()
 
         except FileNotFoundError as err:
             messagebox.showerror(title='Info', message='File not found\n' + str(err))
