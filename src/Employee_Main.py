@@ -69,7 +69,8 @@ class Employee_Main:
             if self.__is_process_running('httpd.exe') and self.__is_process_running('mysqld.exe'):
                 self.logger.info("XAMPP Apache and MySQL modules working correctly")
             else:
-                self.logger.error("XAMPP Apache or MySQL module is not running")
+                self.logger.error("Unable to successfully start XAMPP Apache or MySQL module")
+                self.xampp.terminate()
                 return False
 
             return True
