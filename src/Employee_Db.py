@@ -65,7 +65,7 @@ class Employee_Db:
         except mysql.connector.Error:
             self.logger.error('Error closing db connection')
 
-        # close xampp app
+        # close XAMPP app
         self.xampp.terminate()
 
         # close gui window
@@ -85,8 +85,10 @@ class Employee_Db:
 
             if(len(rows)) == 0:
                 gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
+
                 if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
                     os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
+
         except mysql.connector.Error:
                 gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
                 if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):

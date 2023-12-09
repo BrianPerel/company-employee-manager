@@ -6,9 +6,10 @@ class Employee_Gui:
     def __init__(self, logger, db):
         self.logger = logger
         self.__create_gui(db)
-        db.check_db_size(gui=self)
-        self.clear_gui_entry_fields()
 
+        db.check_db_size(gui=self)
+
+        self.clear_gui_entry_fields()
         self.main_window.mainloop()
 
     def __create_gui(self, db):
@@ -25,16 +26,19 @@ class Employee_Gui:
         self.main_window.configure(background='lightgrey')  # app (GUI) background color
         self.main_window.title('EMS')  # app title
         self.main_window.resizable(0, 0)  # disable resizable option for GUI
-        self.main_window.eval('tk::PlaceWindow . center')  # launches the GUI in the center of the screen
+
+        # launches the GUI in the center of the screen regardless of your screen resolution
+        self.main_window.geometry(f'{520}x{420}+{((self.main_window.winfo_screenwidth() - 520) // 2)}+{((self.main_window.winfo_screenheight() - 420) // 2)}')
+
+        # listens for when 'x' exit button is pressed and routes to __close_app
+        self.main_window.protocol('WM_DELETE_WINDOW', lambda: db.close_app(self.main_window))
 
         # create a GUI label (display EMPLOYEE MANAGEMENT SYSTEM) = the header_label of the GUI app
         self.header_label = tk.Label(text='EMPLOYEE MANAGEMENT SYSTEM',
                     font='Times 12 bold', bg='lightgrey')
 
         # build line between header_label and the body of app
-        self.header_canvas = tk.Canvas(self.main_window, width=495, height=40, bd=0,
-                    borderwidth=0, bg='lightgrey', highlightthickness=0.5,
-                    highlightbackground='lightgrey')
+        self.header_canvas = tk.Canvas(self.main_window, width=495)
 
         # create line between header_label and body of app
         self.header_canvas.create_line(2, 25, 800, 25, width=2)
@@ -54,10 +58,7 @@ class Employee_Gui:
         self.enter_id_label = tk.Label(text='\tID:', font=('Courier', 10), bg='lightgrey')
 
         # create an output box (GUI entry)
-        self.id_output_entry = tk.Entry(width=15,
-                    textvariable=self.output_entry_var1, font=('Courier', 10), bd=2,
-                    highlightthickness=1, highlightcolor='black', validate="key",
-                    validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        self.id_output_entry = tk.Entry(textvariable=self.output_entry_var1)
 
         # sets focus on the first text field in app on startup
         self.id_output_entry.focus_set()
@@ -67,53 +68,35 @@ class Employee_Gui:
                     command=lambda: db.look_up_employee(gui=self), bg='SystemButtonFace')
 
         # create label
-        self.enter_name_label = tk.Label(text='\tName:', font=('Courier', 10),
-                                                               bg='lightgrey')
+        self.enter_name_label = tk.Label(text='\tName:', font=('Courier', 10), bg='lightgrey')
 
         # take entry box variable and perform action
-        self.name_output_entry = tk.Entry(width=15,
-                    textvariable=self.output_entry_var2, font=('Courier', 10), bd=2,
-                    highlightthickness=1, highlightcolor='black', foreground='gray',
-                    validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        self.name_output_entry = tk.Entry(textvariable=self.output_entry_var2)
 
         # GUI button (update employee)
         self.update_emp_button = tk.Button(text='Update Employee', command=lambda: db.update_employee(gui=self))
 
-        self.enter_dept_label = tk.Label(text='\tDepartment:', font=('Courier', 10),
-                                                       bg='lightgrey')
+        self.enter_dept_label = tk.Label(text='\tDepartment:', font=('Courier', 10), bg='lightgrey')
 
         # take entry box variable and perform action
-        self.dept_output_entry = tk.Entry(width=15,
-                    textvariable=self.output_entry_var3, font=('Courier', 10), bd=2,
-                    highlightthickness=1, highlightcolor='black', foreground='gray',
-                    validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        self.dept_output_entry = tk.Entry(textvariable=self.output_entry_var3)
 
         # GUI buttons (delete employee)
         self.delete_emp_button = tk.Button(text='Delete Employee', command=lambda: db.delete_employee(gui=self))
 
         # display formatted label
-        self.enter_title_label = tk.Label(text='\tTitle:', font=('Courier', 10),
-                                          bg='lightgrey')
+        self.enter_title_label = tk.Label(text='\tTitle:', font=('Courier', 10), bg='lightgrey')
 
         # take entry box variable and perform action
-        self.job_title_output_entry = tk.Entry(width=15,
-                    textvariable=self.output_entry_var4, font=('Courier', 10), bd=2,
-                    highlightthickness=1, highlightcolor='black', foreground='grey',
-                    validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        self.job_title_output_entry = tk.Entry(textvariable=self.output_entry_var4)
 
-        # Opens xampp's MySQL module's admin website via direct link
-        self.visit_db_button = tk.Button(text='Visit DB website',
-                    command=db.open_db_website)
+        # Opens XAMPP's MySQL module's admin website via weblink
+        self.visit_db_button = tk.Button(text='Visit Database', command=db.open_db_website)
 
         # take entry box variable and perform action
-        self.pay_rate_output_entry = tk.Entry(width=15,
-                    textvariable=self.output_entry_var5, font=('Courier', 10), bd=2,
-                    highlightthickness=1, highlightcolor='black', foreground='grey',
-                    validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        self.pay_rate_output_entry = tk.Entry(textvariable=self.output_entry_var5)
 
-        self.reset_button_canvas = tk.Canvas(self.main_window, width=150, height=40, bd=0,
-                    borderwidth=0, bg='lightgrey', highlightthickness=0.5,
-                    highlightbackground='lightgrey')
+        self.reset_button_canvas = tk.Canvas(self.main_window, width=195)
 
         self.reset_button_canvas.create_line(2, 25, 600, 25, width=2)
 
@@ -123,10 +106,7 @@ class Employee_Gui:
         # display formatted label
         self.enter_phone_num_label = tk.Label(text='\tPhone Number:', font=('Courier', 10), bg='lightgrey')
 
-        self.phone_num_output_entry = tk.Entry(width=15,
-                        textvariable=self.output_entry_var6, font=('Courier', 10), bd=2,
-                        highlightthickness=1, highlightcolor='black', foreground='grey',
-                        validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+        self.phone_num_output_entry = tk.Entry(textvariable=self.output_entry_var6)
 
         # GUI formatted buttons, call appropriate method when clicked
         self.reset_button = tk.Button(text='Reset System', command=lambda: db.reset_system(gui=self))
@@ -145,18 +125,8 @@ class Employee_Gui:
         # GUI button
         self.add_emp_button = tk.Button(text='Add New Employee', command=lambda: db.add_employee(gui=self))
 
-        buttons = [self.look_up_emp_button, self.add_emp_button, self.update_emp_button,
-                   self.delete_emp_button, self.reset_button, self.visit_db_button]
-
-        for button in buttons:
-            button.config(font=('Courier', 10), borderwidth=3, cursor='hand2')
-            button.bind('<Enter>', self.__on_hover)
-            button.bind('<Leave>', self.__on_leave)
-
         # build line between body of app and footer_label
-        self.footer_canvas = tk.Canvas(self.main_window, width=495, height=40, bd=0,
-                            borderwidth=0, bg='lightgrey', highlightthickness=0.5,
-                            highlightbackground='lightgrey')
+        self.footer_canvas = tk.Canvas(self.main_window, width=495)
 
         # create line between body of app and footer_label
         self.footer_canvas.create_line(2, 25, 600, 25, width=2)
@@ -191,19 +161,28 @@ class Employee_Gui:
         self.footer_canvas.place(x=10, y=340)
         self.footer_label.place(x=160, y=380)
 
-        entries = [self.id_output_entry, self.name_output_entry, self.dept_output_entry, self.job_title_output_entry,
-                   self.pay_rate_output_entry, self.phone_num_output_entry]
+        buttons = [self.look_up_emp_button, self.add_emp_button, self.update_emp_button,
+                   self.delete_emp_button, self.reset_button, self.visit_db_button]
 
-        for entry in entries:
+        for button in buttons:
+            button.config(font=('Courier', 10), borderwidth=3, cursor='hand2')
+            button.bind('<Enter>', self.__on_hover)
+            button.bind('<Leave>', self.__on_leave)
+
+        for canvas in [self.header_canvas, self.reset_button_canvas, self.footer_canvas]:
+            canvas.config(height=40, bd=0, borderwidth=0, bg='lightgrey', highlightthickness=0.5, highlightbackground='lightgrey')
+
+        output_entries = [self.id_output_entry, self.name_output_entry, self.dept_output_entry, self.job_title_output_entry,
+                          self.pay_rate_output_entry, self.phone_num_output_entry]
+
+        for entry in output_entries:
             # if user clicks in this text field box with their mouse, call this function
             entry.bind('<Button-1>', self.__on_click)
             # if user clicks in this text field box with their keyboard, call this function
             entry.bind('<FocusIn>', self.__on_click)
             # if insertion pointer leaves current text field (focus is lost) call this function
             entry.bind('<FocusOut>', lambda event, entry=entry: self.__focus_out(event, entry))
-
-        # listens for when 'x' exit button is pressed and routes to __close_app
-        self.main_window.protocol('WM_DELETE_WINDOW', lambda: db.close_app(self.main_window))
+            entry.config(width=15, font=('Courier', 10), bd=2, highlightthickness=1, highlightcolor='black', foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
     def __validate_entry(self, value):
         # only allow up to 6 characters in ID or pay rate and up to 12 characters in name, dept, job title, or phone number fields
