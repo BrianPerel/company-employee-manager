@@ -16,6 +16,7 @@ import re as regular_exp
 import mysql.connector
 import webbrowser
 import pickle
+import sys
 import os
 
 class Employee_Db:
@@ -36,17 +37,18 @@ class Employee_Db:
         # connect to the MySQL database using user credentials
         try:
             self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
-            self.logger.info('Database connection established to "employee_db" using username "root"')
         except mysql.connector.Error as err:
-            self.logger.error('Exception caught: ' + str(err) + '\nTerminating xampp control panel')
+            self.logger.error('Exception caught: ' + str(err) + '\nTerminating xampp control panel and application')
             self.xampp.terminate()
+            sys.exit()
 
         # create the empty database, if it doesn't already exist
         try:
             # create a buffered cursor object for executing SQL queries on a MySQL database
             self.mycursor = self.mydb.cursor(buffered=True)
-            self.mycursor.execute('CREATE DATABASE IF NOT EXISTS employee_db')
-            self.mycursor.execute('USE employee_db')
+            self.mycursor.execute('CREATE DATABASE IF NOT EXISTS company')
+            self.mycursor.execute('USE company') # use company db
+            self.logger.info('Database connection established to "company" using username "root"')
         except mysql.connector.Error as err:
             self.logger.error('Error while creating the database: ' + str(err))
 
@@ -72,7 +74,7 @@ class Employee_Db:
         main_window.destroy()
 
         if connection_closed:
-            self.logger.info('Employee application, employee_db database connection, and xampp module successfully closed')
+            self.logger.info('Employee application, company database connection, and xampp module successfully closed')
 
     def check_db_size(self, gui):
         ''' attempts a select query on the db table to check if the database is empty. If we can't connect to the db because
@@ -96,7 +98,7 @@ class Employee_Db:
 
     def open_db_website(self):
         try:
-            webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=employee_db&table=employees&pos=0', new=1)
+            webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=company&table=employees', new=1)
         except webbrowser.Error:
             self.logger.error("Failed to open DB website.")
 

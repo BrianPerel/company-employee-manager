@@ -1,8 +1,8 @@
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
 import Employee_Logger as EMS_Logger
-from Employee_Db import Employee_Db
 import Employee_Gui as EMS_Gui
+import Employee_Db as EMS_Db
 from datetime import datetime
 import subprocess
 import psutil
@@ -13,7 +13,7 @@ import os
 
 class Employee_Main:
 
-    def start_app(self):
+    def __init__(self):
         # defines the file to save the apps employee profiles to. The saved file can be loaded later and will contain the current date
         self.SAVED_EMPLOYEES_DATA_FILE = f'..\\employees.{datetime.now().strftime("%m_%d_%Y")}.dat'
         self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
@@ -22,8 +22,6 @@ class Employee_Main:
         successful_launch = self.__start_xampp()
 
         if successful_launch:
-            db = Employee_Db(self.SAVED_EMPLOYEES_DATA_FILE, self.logger, self.xampp, self.employees)
-
             try:
                 # create a new file only if file doesn't already exist under the specific format
                 if not any(glob.glob("..\\employees.*.dat")) and not os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE):
@@ -33,9 +31,9 @@ class Employee_Main:
                 else:
                     self.__load_file()
             except FileNotFoundError as e:
-                self.logger.error(f"An error occurred: {e}")
+                self.logger.error(f"An error occurred while loading .dat file: {e}")
 
-            EMS_Gui.Employee_Gui(self.logger, db)
+            EMS_Gui.Employee_Gui(self.logger, EMS_Db.Employee_Db(self.SAVED_EMPLOYEES_DATA_FILE, self.logger, self.xampp, self.employees))
 
     def __start_xampp(self):
         # start XAMPP control panel using the subprocess module
@@ -91,27 +89,24 @@ class Employee_Main:
         try:
             # only attempt to open the data file if the file has read permission and is not empty
             if os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.R_OK) and os.stat(self.SAVED_EMPLOYEES_DATA_FILE).st_size != 0:
-                file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'rb')
+                with open(self.SAVED_EMPLOYEES_DATA_FILE, 'rb') as file_obj:
 
-                while True:
-                    try:
-                        # obtain the next (or first) object (employee) of the data file
-                        content = pickle.load(file_obj)
+                    while True:
+                        try:
+                            # obtain the first or next object (employee) of the data file
+                            content = pickle.load(file_obj)
 
-                        ID = content.get_id_number()
-                        if ID not in self.employees:
-                            self.employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
-                                     content.get_title(), content.get_pay_rate(),
-                                     content.get_phone_number(), content.get_work_type())
+                            ID = content.get_id_number()
+                            if ID not in self.employees:
+                                self.employees[ID] = EMS.Employee_Management_System(ID, content.get_name(), content.get_department(),
+                                         content.get_title(), content.get_pay_rate(),
+                                         content.get_phone_number(), content.get_work_type())
 
-                    except EOFError as err:
-                        break
-
-                file_obj.close()
+                        except EOFError as err:
+                            break
 
         except FileNotFoundError as err:
             messagebox.showerror(title='Info', message='File not found\n' + str(err))
 
-# create instance of EMSGui class
-app = Employee_Main()
-app.start_app()
+# create an instance of Main Employee class to start the app
+Employee_Main()

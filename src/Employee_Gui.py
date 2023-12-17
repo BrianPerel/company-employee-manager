@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import PhotoImage
 
 class Employee_Gui:
 
@@ -16,12 +15,11 @@ class Employee_Gui:
         ''' create and place main gui window, buttons, labels, entry's, and a canvas1 line '''
 
         self.main_window = tk.Tk()  # make the GUI window
-        self.main_window.geometry('520x420')  # width x height of the GUI window
 
         try:
-            self.main_window.iconphoto(True, PhotoImage(file='../res/icon.png'))
-        except Exception as e:
-            self.logger.error(f"An error occurred: {e}")
+            self.main_window.iconphoto(True, tk.PhotoImage(file='../res/icon.png'))
+        except (FileNotFoundError, tk.TclError) as e:
+            self.logger.error(f"An error occurred while loading icon file: {e}")
 
         self.main_window.configure(background='lightgrey')  # app (GUI) background color
         self.main_window.title('EMS')  # app title

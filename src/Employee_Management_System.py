@@ -5,7 +5,8 @@ on employees stored in employee dictionary stored in GUI.py
 '''
 
 class Employee_Management_System:
-    # print(__doc__)
+
+    #print(__doc__)
     def __init__(self, id_number, name, department, title, pay_rate, phone_number, work_type):
         self.__id_number = id_number
         self.__name = name

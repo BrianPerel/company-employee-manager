@@ -1,12 +1,21 @@
-import os
+'''
+Author: @Brian Perel
+Build script for building a standalone executable file using PyInstaller for the project.
+Make sure to have pyinstaller installed in pip and and optionally upx packager before running this script
+'''
+
+import pkg_resources
+import shutil
 import time
 import glob
-import shutil
+import os
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 def __clean():
-    # if dist or build directories already exists, do a clean
+    ''' removes the 'dist' and/or 'build' directories if they already exist
+    '''
+
     dist_dir = os.path.join(current_dir, 'dist')
     build_dir = os.path.join(current_dir, 'build')
 
@@ -17,6 +26,12 @@ def __clean():
         shutil.rmtree(build_dir)
 
 def __create_exe():
+    ''' Creates the executable:
+        Defines the output directory for the executable ('dist/app/').
+        Retrieves a list of Python files in the 'src' directory.
+        Constructs a command to run PyInstaller with specific options
+    '''
+
     output_dir = os.path.join(current_dir, 'dist', 'app')  # Specify the executable output directory path ('dist/app/')
     source_files = glob.glob(os.path.join(current_dir, 'src', '*.py'))  # get a list of all Python files in the src directory
 
@@ -33,6 +48,10 @@ def __create_exe():
     time.sleep(8)
 
 def __move_res_files():
+    ''' Creates a 'res' folder in the 'dist' directory if it doesn't exist.
+        Copies the 'res/icon.png' file into the 'dist/res' subfolder.
+    '''
+
     output_dir = os.path.join(current_dir, 'dist')  # specify the output directory for the generated exe
 
     # create the 'res' folder in the 'dist' directory if it doesn't exist
@@ -47,7 +66,7 @@ def __move_res_files():
 def __build():
     ''' custom build file that converts the python src code to a single packaged (distributable) executable file '''
 
-    start_time = time.time() # start script time tracker
+    start_time = time.time() # start script execution time tracker
 
     # set current system file and directory location for displaying file location info
     current_file = os.path.basename(__file__)
@@ -75,8 +94,15 @@ def __build():
 
     print("BUILD SUCCESSFUL")
 
-    end_time = time.time() # end script time tracker
+    end_time = time.time() # end script execution time tracker
     execution_time = end_time - start_time # calculate execution time
     print(f"Total time: {execution_time:.2f} seconds")
 
-__build()
+
+# Only run the build script if the required pyinstaller package is installed. This check is needed because
+# pyinstaller is called via command prompt, where the check is not implicitly done.
+try:
+    pkg_resources.get_distribution('pyinstaller')
+    __build()
+except pkg_resources.DistributionNotFound:
+    print("Error - pyinstaller is not installed. Please install Python pyinstaller package in pip")
