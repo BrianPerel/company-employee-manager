@@ -5,6 +5,7 @@ import Employee_Gui as EMS_Gui
 import Employee_Db as EMS_Db
 from datetime import datetime
 import subprocess
+import logging
 import psutil
 import pickle
 import time
@@ -17,6 +18,8 @@ class Employee_Main:
         # defines the file to save the apps employee profiles to. The saved file can be loaded later and will contain the current date
         self.SAVED_EMPLOYEES_DATA_FILE = f'..\\employees.{datetime.now().strftime("%m_%d_%Y")}.dat'
         self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
+
+        self.logger = logging.getLogger("employee_main")
 
         self.employees = {} # create empty dictionary
         successful_launch = self.__start_xampp()

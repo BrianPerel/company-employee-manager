@@ -15,6 +15,7 @@ from datetime import datetime
 import re as regular_exp
 import mysql.connector
 import webbrowser
+import logging
 import pickle
 import sys
 import os
@@ -27,6 +28,8 @@ class Employee_Db:
         self.employees = employees
         self.logger = logger
         self.xampp = xampp
+        
+        self.logger = logging.getLogger("employee_db")
 
         self.__start_db_connection()
 

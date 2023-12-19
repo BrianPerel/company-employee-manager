@@ -18,13 +18,13 @@ class Employee_Logger:
         # create log folder if it doesn't exist
         os.makedirs("../log", exist_ok=True)
 
-        # setup and configure a custom logger
+        # setup and configure a custom logger, this will set the class name in the logger
         logger = logging.getLogger("employee_logger")
 
         # create a file and console handler, set a custom formatter on the file and console handlers to include current date in file name and to be placed in log folder.
         # Add the file and console handlers to the logger. Log file will override existing log file of same date
         file_handler = logging.FileHandler(os.path.join("../log", f'employee_manager.{datetime.now().strftime("%m_%d_%Y")}.log'), mode='w')
-        logging.basicConfig(handlers=[file_handler, logging.StreamHandler()], level=logging.INFO, format='%(asctime)s %(levelname)s %(funcName)s(): line %(lineno)d: - %(message)s')
+        logging.basicConfig(handlers=[file_handler, logging.StreamHandler()], level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(funcName)s(): line %(lineno)d: - %(message)s')
 
         if logs_deleted:
             logger.info("More than 15 log files we're found - log folder deleted")

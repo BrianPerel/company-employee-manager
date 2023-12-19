@@ -1,11 +1,13 @@
 import tkinter as tk
+import logging
 
 class Employee_Gui:
 
     def __init__(self, logger, db):
         self.logger = logger
+        self.logger = logging.getLogger("employee_gui")
+        
         self.__create_gui(db)
-
         db.check_db_size(gui=self)
 
         self.clear_gui_entry_fields()

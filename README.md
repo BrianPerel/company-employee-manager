@@ -2,7 +2,7 @@
 - About: Python program that will store information about employees in a company using a dictionary.
 - Python version `3.10` used for development
 
-- The app will require you to have XAMPP installed on your machine under the path `C:\xampp`.
+- The app will require you to have XAMPP (https://www.apachefriends.org/download.html) installed on your machine under the path `C:\xampp`.
 - You must set XAMPP config to auto start the Apache and MySQL services for the app to execute correctly.
 You can additionally set XAMPP to auto start minimized
 
