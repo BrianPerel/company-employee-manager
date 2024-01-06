@@ -28,8 +28,8 @@ class Employee_Db:
         self.employees = employees
         self.logger = logger
         self.xampp = xampp
-        
-        self.logger = logging.getLogger("employee_db")
+
+        self.logger = logging.getLogger(__name__)
 
         self.__start_db_connection()
 
@@ -39,7 +39,7 @@ class Employee_Db:
 
         # connect to the MySQL database using user credentials
         try:
-            self.mydb = mysql.connector.connect(host='localhost', port=3306, user='root')
+            self.mydb = mysql.connector.connect(host='localhost', port=3306, autocommit=True, charset='utf8mb4', user='root')
         except mysql.connector.Error as err:
             self.logger.error('Exception caught: ' + str(err) + '\nTerminating xampp control panel and application')
             self.xampp.terminate()
@@ -215,8 +215,6 @@ class Employee_Db:
                 self.mycursor.execute('INSERT INTO employees (Employee_Creation_Date, ID, Name, Department, Title, \
                 Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s, %s)',
                 (date, ID, name, dept, title, pay_rate, phone_number, work_type))
-
-                self.mydb.commit() # commit the changes to the database
             except mysql.connector.Error as err:
                 message = 'An employee with that ID already exists.'
                 gui.clear_gui_entry_fields()
@@ -319,7 +317,6 @@ class Employee_Db:
             self.mycursor.execute('SELECT * FROM employees WHERE ID = %s', (ID,))  # execute sql statement with above statement as arg
             self.mycursor.execute('UPDATE employees SET Name=%s, Department=%s, Title=%s, Pay_Rate=%s, Phone_Number=%s, Work_Type=%s WHERE ID=%s',
                     (f'{name}', f'{dept}', f'{title}', f'{pay_rate}', f'{phone_number}', f'{work_type}', f'{ID}'))
-            self.mydb.commit()
 
             message = 'The employee has been updated'
 
@@ -339,7 +336,6 @@ class Employee_Db:
 
         try:
             self.mycursor.execute('DELETE FROM employees WHERE ID = %s', (ID,))
-            self.mydb.commit()
         except mysql.connector.Error as err:
             self.logger.error('Exception caught: ' + str(err))
 
@@ -360,11 +356,11 @@ class Employee_Db:
         '''
 
         if messagebox.askquestion(title='Reset System', message='Are you sure you want to delete everything in your employee database?') == 'yes':
-            # function to reset app data, in case company leaves. This will delete all data in app and the whole database
+            # function to reset app data, in case the company goes out of business. This will delete all data in app and the whole database
             self.employees = {}
 
             try:
-                self.mycursor.execute('DROP TABLE employees')
+                self.mycursor.execute('DROP TABLE IF EXISTS employees')
 
                 if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
                     os.remove(self.SAVED_EMPLOYEES_DATA_FILE)

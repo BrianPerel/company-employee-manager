@@ -19,7 +19,7 @@ class Employee_Main:
         self.SAVED_EMPLOYEES_DATA_FILE = f'..\\employees.{datetime.now().strftime("%m_%d_%Y")}.dat'
         self.logger = EMS_Logger.Employee_Logger.setup_custom_logger(self)
 
-        self.logger = logging.getLogger("employee_main")
+        self.logger = logging.getLogger(__name__)
 
         self.employees = {} # create empty dictionary
         successful_launch = self.__start_xampp()
@@ -27,7 +27,7 @@ class Employee_Main:
         if successful_launch:
             try:
                 # create a new file only if file doesn't already exist under the specific format
-                if not any(glob.glob("..\\employees.*.dat")) and not os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE):
+                if not any(glob.glob("..\\employees*.dat")) and not os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE):
                     # create a new binary file to store binary object info, if one doesn't already exist in folder
                     file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'wb')
                     file_obj.close()
@@ -86,8 +86,13 @@ class Employee_Main:
         # get a list of all files in the parent directory
         dat_files_in_parent = os.listdir(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)))
 
-        # find the first file with a .dat extension, then since it's in the parent directory prepend the ..\\
-        self.SAVED_EMPLOYEES_DATA_FILE = "..\\"  + next((file for file in dat_files_in_parent if file.startswith("employees") and file.endswith(".dat")), None)
+        if dat_files_in_parent is not None:
+            log_file = next((file for file in dat_files_in_parent if file.startswith("employees") and file.endswith(".dat")), None)
+
+            if log_file is not None:
+                # find the first file with a .dat extension, then prepend "..\\" if found
+                self.SAVED_EMPLOYEES_DATA_FILE = "..\\"  + log_file
+                self.logger.info('Existing log file found, using ' + self.SAVED_EMPLOYEES_DATA_FILE)
 
         try:
             # only attempt to open the data file if the file has read permission and is not empty

@@ -5,8 +5,8 @@ class Employee_Gui:
 
     def __init__(self, logger, db):
         self.logger = logger
-        self.logger = logging.getLogger("employee_gui")
-        
+        self.logger = logging.getLogger(__name__)
+
         self.__create_gui(db)
         db.check_db_size(gui=self)
 

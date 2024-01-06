@@ -19,7 +19,7 @@ class Employee_Logger:
         os.makedirs("../log", exist_ok=True)
 
         # setup and configure a custom logger, this will set the class name in the logger
-        logger = logging.getLogger("employee_logger")
+        logger = logging.getLogger(__name__)
 
         # create a file and console handler, set a custom formatter on the file and console handlers to include current date in file name and to be placed in log folder.
         # Add the file and console handlers to the logger. Log file will override existing log file of same date
