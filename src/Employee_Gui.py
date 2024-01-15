@@ -184,6 +184,10 @@ class Employee_Gui:
             entry.bind('<FocusOut>', lambda event, entry=entry: self.__focus_out(event, entry))
             entry.config(width=15, font=('Courier', 10), bd=2, highlightthickness=1, highlightcolor='black', foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
+        self.tooltip = None
+        self.visit_db_button.bind("<Enter>", lambda event, button=self.visit_db_button: self.schedule_tooltip(event, button))
+        self.visit_db_button.bind("<Leave>", lambda event: self.hide_tooltip(event))
+
     def __validate_entry(self, value):
         # only allow up to 6 characters in ID or pay rate and up to 12 characters in name, dept, job title, or phone number fields
         if self.main_window.focus_get() == self.id_output_entry or self.main_window.focus_get() == self.pay_rate_output_entry:
@@ -255,3 +259,35 @@ class Employee_Gui:
 
         entry_widget.update()
         entry_widget.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
+
+    def schedule_tooltip(self, event, button):
+        event.widget.config(bg='lightgrey', borderwidth=3.8)
+        self.tooltip_id = self.visit_db_button.after(1500, lambda: self.show_tooltip(button))
+
+    def show_tooltip(self, button):
+        if self.tooltip_id:
+            self.visit_db_button.after_cancel(self.tooltip_id)
+            self.tooltip_id = None
+
+            x, y, _, _ = button.bbox("insert")
+            x += button.winfo_rootx() + 30
+            y += button.winfo_rooty() + 38
+
+            # Create a toplevel window
+            self.tooltip = tk.Toplevel(button)
+            self.tooltip.wm_overrideredirect(True)
+            self.tooltip.wm_geometry(f"+{x}+{y}")
+
+            # Display the tooltip text
+            label = tk.Label(self.tooltip, text="http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=company&table=employees", background="#ffffe0", relief="solid", borderwidth=1)
+            label.pack(ipadx=1)
+
+    def hide_tooltip(self, event):
+        event.widget.config(bg='SystemButtonFace', borderwidth=3)
+
+        if self.tooltip_id:
+            self.visit_db_button.after_cancel(self.tooltip_id)
+            self.tooltip_id = None
+        if self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None

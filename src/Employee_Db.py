@@ -181,7 +181,7 @@ class Employee_Db:
             else:
                 check = False
         except ValueError as err:
-            messagebox.showinfo(title='Info', message='Couldn\'t add employee.')
+            messagebox.showinfo(title='Validation Error', message='Couldn\'t add employee.')
             gui.clear_gui_entry_fields()
             return
 
@@ -194,11 +194,14 @@ class Employee_Db:
         # create instance and send the values
         new_emp = EMS.Employee_Management_System(ID, name, dept, title, pay_rate, phone_number, work_type)
 
+        message_title = 'Validation Error'
+        message = 'Couldn\'t add employee.'
+
         # conditional statement to add employee into dictionary
         if ID not in self.employees and len(phone_number) == 12 and check and len(ID) == 6 \
            and '' not in [name, dept, title, pay_rate, phone_number, work_type] \
            and pattern1 and pattern2 and pattern3 and not name_has_digit \
-           and not dept_has_digit and not title_has_digit:
+           and not dept_has_digit and not title_has_digit and ID != '000000' and phone_number != '000-000-0000':
             self.employees[ID] = new_emp
             message = 'The new employee has been added'
 
@@ -220,17 +223,12 @@ class Employee_Db:
                 gui.clear_gui_entry_fields()
                 self.logger.error('Exception caught: ' + str(err))
 
-        # input validation: make sure no fields are blank and input of proper lengths is given
-        elif '' in [ID, name, dept, title, pay_rate, phone_number, work_type] \
-             or not check or len(ID) != 6 or not pattern1 \
-             or not pattern2 or not pattern3 or name_has_digit \
-             or dept_has_digit or title_has_digit or (len(phone_number) != 12):
-            message = 'Couldn\'t add employee.'
         elif ID in self.employees:
             message = 'An employee with that ID already exists.'
+            message_title='Success'
 
         # show info message box with data
-        messagebox.showinfo(title='Info', message=message)
+        messagebox.showinfo(title=message_title, message=message)
 
         gui.clear_gui_entry_fields()
 
@@ -293,18 +291,18 @@ class Employee_Db:
                 else:
                     check = False
             except ValueError as err:
-                messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
+                messagebox.showinfo(title='Validation Error', message='Couldn\'t update employee\'s info')
                 gui.clear_gui_entry_fields()
                 return
 
             # create radio buttons: 0 is representative of when neither is selected, 1 is for first circle, 2 is for second circle
             if gui.radio_var.get() == 0 or len(phone_number) != 12 or not check \
-            or '' in [name, dept, title, pay_rate, phone_number] or not pattern1 \
-            or name_has_digit or not pattern2 or dept_has_digit or not pattern3 \
-            or title_has_digit or pay_rate_has_letters:
-                messagebox.showinfo(title='Info', message='Couldn\'t update employee\'s info')
-                gui.clear_gui_entry_fields()
-                return
+                or '' in [name, dept, title, pay_rate, phone_number] or not pattern1 \
+                or name_has_digit or not pattern2 or dept_has_digit or not pattern3 \
+                or title_has_digit or pay_rate_has_letters:
+                    messagebox.showinfo(title='Validation Error', message='Couldn\'t update employee\'s info')
+                    gui.clear_gui_entry_fields()
+                    return
             elif gui.radio_var.get() == 1:
                 work_type = 'Part time'
             elif gui.radio_var.get() == 2:
@@ -365,11 +363,11 @@ class Employee_Db:
                 if(os.path.isfile(self.SAVED_EMPLOYEES_DATA_FILE) and os.access(self.SAVED_EMPLOYEES_DATA_FILE, os.W_OK)):
                     os.remove(self.SAVED_EMPLOYEES_DATA_FILE)
 
-                messagebox.showinfo(title='Info', message='System has been reset: database table and ' + self.SAVED_EMPLOYEES_DATA_FILE[3:] + ' deleted')
+                messagebox.showinfo(title='Success', message='System has been reset: database table and ' + self.SAVED_EMPLOYEES_DATA_FILE[3:] + ' deleted')
             except mysql.connector.Error as err:
-                messagebox.showerror(title='Info', message='Database not found, file not found\n' + str(err))
+                messagebox.showerror(title='Error', message='Database not found, file not found\n' + str(err))
             except FileNotFoundError as err:
-                messagebox.showerror(title='Info', message='.dat data file not found\n' + str(err))
+                messagebox.showerror(title='Error', message='.dat data file not found\n' + str(err))
 
             gui.reset_button['state'] = gui.delete_emp_button['state'] = gui.update_emp_button['state'] = gui.look_up_emp_button['state'] = DISABLED
 

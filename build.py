@@ -1,5 +1,5 @@
 '''
-Author: @Brian Perel
+Author: Brian Perel
 Build script for building a standalone executable file using PyInstaller for the project.
 Make sure to have pyinstaller installed in pip and and optionally upx packager before running this script
 '''
@@ -66,8 +66,6 @@ def __move_res_files():
 def __build():
     ''' custom build file that converts the python src code to a single packaged (distributable) executable file '''
 
-    start_time = time.time() # start script execution time tracker
-
     # set current system file and directory location for displaying file location info
     current_file = os.path.basename(__file__)
     print(f"Buildfile: {os.path.join(current_dir, current_file)}")
@@ -92,17 +90,36 @@ def __build():
     except Exception as e:
         print(f"An error occurred: {e}")
 
+    # move the 'dist' folder to the user's desktop
+    desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+    dist_dest = os.path.join(desktop_path, 'dist')
+
+    # remove existing 'dist' folder from the desktop if it exists, before copying it over
+    if os.path.exists(dist_dest):
+        shutil.rmtree(dist_dest)
+
+    try:
+        shutil.move(os.path.join(current_dir, 'dist'), dist_dest)
+        print(f"The 'dist' folder has been successfully moved to the desktop.")
+    except FileNotFoundError:
+        print("Error - The 'dist' folder does not exist.")
+    except PermissionError:
+        print("Permission error - Unable to move the 'dist' folder.")
+    except Exception as e:
+        print(f"An error occurred while moving the 'dist' folder: {e}")
+
+# Only run the build script if the required pyinstaller package is installed. This check is needed because
+# pyinstaller is called via command prompt, where the check is not implicitly done.
+try:
+    start_time = time.time() # start script execution time tracker
+
+    pkg_resources.get_distribution('pyinstaller')
+    __build()
+
     print("BUILD SUCCESSFUL")
 
     end_time = time.time() # end script execution time tracker
     execution_time = end_time - start_time # calculate execution time
     print(f"Total time: {execution_time:.2f} seconds")
-
-
-# Only run the build script if the required pyinstaller package is installed. This check is needed because
-# pyinstaller is called via command prompt, where the check is not implicitly done.
-try:
-    pkg_resources.get_distribution('pyinstaller')
-    __build()
 except pkg_resources.DistributionNotFound:
     print("Error - pyinstaller is not installed. Please install Python pyinstaller package in pip")
