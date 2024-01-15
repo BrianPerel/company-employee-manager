@@ -94,11 +94,11 @@ def __build():
     desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
     dist_dest = os.path.join(desktop_path, 'dist')
 
-    # remove existing 'dist' folder from the desktop if it exists, before copying it over
-    if os.path.exists(dist_dest):
-        shutil.rmtree(dist_dest)
-
     try:
+        # remove existing 'dist' folder from the desktop if it exists, before copying it over
+        if os.path.exists(dist_dest):
+            shutil.rmtree(dist_dest)
+
         shutil.move(os.path.join(current_dir, 'dist'), dist_dest)
         print(f"The 'dist' folder has been successfully moved to the desktop.")
     except FileNotFoundError:

@@ -91,7 +91,7 @@ class Employee_Gui:
         self.job_title_output_entry = tk.Entry(textvariable=self.output_entry_var4)
 
         # Opens XAMPP's MySQL module's admin website via weblink
-        self.visit_db_button = tk.Button(text='Visit Database', command=db.open_db_website)
+        self.visit_db_button = tk.Button(text='Visit Database', font=('Courier', 10), borderwidth=3, cursor='hand2', command=db.open_db_website)
 
         # take entry box variable and perform action
         self.pay_rate_output_entry = tk.Entry(textvariable=self.output_entry_var5)
@@ -161,10 +161,8 @@ class Employee_Gui:
         self.footer_canvas.place(x=10, y=340)
         self.footer_label.place(x=160, y=380)
 
-        buttons = [self.look_up_emp_button, self.add_emp_button, self.update_emp_button,
-                   self.delete_emp_button, self.reset_button, self.visit_db_button]
-
-        for button in buttons:
+        for button in [self.look_up_emp_button, self.add_emp_button, self.update_emp_button,
+                   self.delete_emp_button, self.reset_button]:
             button.config(font=('Courier', 10), borderwidth=3, cursor='hand2')
             button.bind('<Enter>', self.__on_hover)
             button.bind('<Leave>', self.__on_leave)
@@ -172,10 +170,8 @@ class Employee_Gui:
         for canvas in [self.header_canvas, self.reset_button_canvas, self.footer_canvas]:
             canvas.config(height=40, bd=0, borderwidth=0, bg='lightgrey', highlightthickness=0.5, highlightbackground='lightgrey')
 
-        output_entries = [self.id_output_entry, self.name_output_entry, self.dept_output_entry, self.job_title_output_entry,
-                          self.pay_rate_output_entry, self.phone_num_output_entry]
-
-        for entry in output_entries:
+        for entry in [self.id_output_entry, self.name_output_entry, self.dept_output_entry, self.job_title_output_entry,
+                          self.pay_rate_output_entry, self.phone_num_output_entry]:
             # if user clicks in this text field box with their mouse, call this function
             entry.bind('<Button-1>', self.__on_click)
             # if user clicks in this text field box with their keyboard, call this function
@@ -261,6 +257,7 @@ class Employee_Gui:
         entry_widget.config(foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
     def schedule_tooltip(self, event, button):
+        # make the button become it's hover state style
         event.widget.config(bg='lightgrey', borderwidth=3.8)
         self.tooltip_id = self.visit_db_button.after(1500, lambda: self.show_tooltip(button))
 
@@ -270,19 +267,18 @@ class Employee_Gui:
             self.tooltip_id = None
 
             x, y, _, _ = button.bbox("insert")
-            x += button.winfo_rootx() + 30
-            y += button.winfo_rooty() + 38
 
             # Create a toplevel window
             self.tooltip = tk.Toplevel(button)
             self.tooltip.wm_overrideredirect(True)
-            self.tooltip.wm_geometry(f"+{x}+{y}")
+            self.tooltip.wm_geometry(f"+{x+button.winfo_rootx() + 30}+{y+button.winfo_rooty() + 38}")
 
             # Display the tooltip text
             label = tk.Label(self.tooltip, text="http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=company&table=employees", background="#ffffe0", relief="solid", borderwidth=1)
             label.pack(ipadx=1)
 
     def hide_tooltip(self, event):
+        # make the button become it's regular (non-hover state) style
         event.widget.config(bg='SystemButtonFace', borderwidth=3)
 
         if self.tooltip_id:

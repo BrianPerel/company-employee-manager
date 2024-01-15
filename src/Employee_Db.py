@@ -299,7 +299,7 @@ class Employee_Db:
             if gui.radio_var.get() == 0 or len(phone_number) != 12 or not check \
                 or '' in [name, dept, title, pay_rate, phone_number] or not pattern1 \
                 or name_has_digit or not pattern2 or dept_has_digit or not pattern3 \
-                or title_has_digit or pay_rate_has_letters:
+                or title_has_digit or pay_rate_has_letters or phone_number == '000-000-0000':
                     messagebox.showinfo(title='Validation Error', message='Couldn\'t update employee\'s info')
                     gui.clear_gui_entry_fields()
                     return
