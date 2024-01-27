@@ -124,10 +124,13 @@ class Employee_Db:
     def add_employee(self, gui, check=True, work_type=''):
         ''' actions for when adding an employee, add an employee to dictionary, by info gathered from GUI
         '''
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(50), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
-                            Name VARCHAR(12), Department VARCHAR(12), \
-                            Title VARCHAR(12), Pay_Rate VARCHAR(6), \
-                            Phone_Number VARCHAR(12), \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(50), \
+                            ID INT UNSIGNED NOT NULL PRIMARY KEY, \
+                            Name VARCHAR(12) UNIQUE, \
+                            Department VARCHAR(12), \
+                            Title VARCHAR(12), \
+                            Pay_Rate VARCHAR(6), \
+                            Phone_Number VARCHAR(12) UNIQUE, \
                             Work_Type VARCHAR(12))')
 
         try:
@@ -219,7 +222,7 @@ class Employee_Db:
                 Pay_Rate, Phone_Number, Work_Type) values (%s, %s, %s, %s, %s, %s, %s, %s)',
                 (date, ID, name, dept, title, pay_rate, phone_number, work_type))
             except mysql.connector.Error as err:
-                message = 'An employee with that ID already exists.'
+                message = 'Couldn\'t add employee.'
                 gui.clear_gui_entry_fields()
                 self.logger.error('Exception caught: ' + str(err))
 
@@ -237,10 +240,13 @@ class Employee_Db:
             updating an already existing employee's info in the dictionary
         '''
 
-        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(30), ID INT UNSIGNED NOT NULL PRIMARY KEY, \
-                            Name VARCHAR(12), Department VARCHAR(12), \
-                            Title VARCHAR(12), Pay_Rate VARCHAR(6), \
-                            Phone_Number VARCHAR(12), \
+        self.mycursor.execute('CREATE TABLE IF NOT EXISTS employees (Employee_Creation_Date VARCHAR(50), \
+                            ID INT UNSIGNED NOT NULL PRIMARY KEY, \
+                            Name VARCHAR(12) UNIQUE, \
+                            Department VARCHAR(12), \
+                            Title VARCHAR(12), \
+                            Pay_Rate VARCHAR(6), \
+                            Phone_Number VARCHAR(12) UNIQUE, \
                             Work_Type VARCHAR(12))')
 
         # get values from entry box widget

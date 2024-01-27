@@ -31,6 +31,9 @@ class Employee_Main:
                     # create a new binary file to store binary object info, if one doesn't already exist in folder
                     file_obj = open(self.SAVED_EMPLOYEES_DATA_FILE, 'wb')
                     file_obj.close()
+
+                    self.logger.info('An existing dat file could not be found')
+                    self.logger.info(self.SAVED_EMPLOYEES_DATA_FILE + ' file has been created')
                 else:
                     self.__load_file()
             except FileNotFoundError as e:
@@ -68,7 +71,7 @@ class Employee_Main:
 
             # Apache and MySQL process names in XAMPP
             if self.__is_process_running('httpd.exe') and self.__is_process_running('mysqld.exe'):
-                self.logger.info("XAMPP Apache and MySQL modules working correctly")
+                self.logger.info("XAMPP Apache and MySQL modules are working correctly")
             else:
                 self.logger.error("Unable to successfully start XAMPP Apache or MySQL module")
                 self.xampp.terminate()
@@ -92,7 +95,7 @@ class Employee_Main:
             if log_file is not None:
                 # find the first file with a .dat extension, then prepend "..\\" if found
                 self.SAVED_EMPLOYEES_DATA_FILE = "..\\"  + log_file
-                self.logger.info('Existing log file found, using ' + self.SAVED_EMPLOYEES_DATA_FILE)
+                self.logger.info('Existing dat file found, using ' + self.SAVED_EMPLOYEES_DATA_FILE)
 
         try:
             # only attempt to open the data file if the file has read permission and is not empty

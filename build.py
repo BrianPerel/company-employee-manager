@@ -5,19 +5,21 @@ Make sure to have pyinstaller installed in pip and and optionally upx packager b
 '''
 
 import pkg_resources
+import subprocess
 import shutil
 import time
 import glob
 import os
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
+DIST_DIR = 'dist'
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def __clean():
     ''' removes the 'dist' and/or 'build' directories if they already exist
     '''
 
-    dist_dir = os.path.join(current_dir, 'dist')
-    build_dir = os.path.join(current_dir, 'build')
+    dist_dir = os.path.join(CURRENT_DIR, 'dist')
+    build_dir = os.path.join(CURRENT_DIR, 'build')
 
     if os.path.exists(dist_dir):
         shutil.rmtree(dist_dir)
@@ -32,19 +34,22 @@ def __create_exe():
         Constructs a command to run PyInstaller with specific options
     '''
 
-    output_dir = os.path.join(current_dir, 'dist', 'app')  # Specify the executable output directory path ('dist/app/')
-    source_files = glob.glob(os.path.join(current_dir, 'src', '*.py'))  # get a list of all Python files in the src directory
+    output_dir = os.path.join(CURRENT_DIR, 'dist', 'app')  # Specify the executable output directory path ('dist/app/')
+    source_files = glob.glob(os.path.join(CURRENT_DIR, 'src', '*.py'))  # get a list of all Python files in the src directory
 
     cmd = (
         f'start /min cmd /c pyinstaller --upx-dir=C:\\upx-4.0.2-win64 --noconsole --onefile ' # call the pyinstaller to package the python scripts using upx packager
         f'--distpath="{output_dir}" '  # set the output directory for generated exe
         f'{" ".join(source_files)} ' # include all Python scripts from the src directory
-        f'--icon={current_dir}/res/icon.ico --name "Employee Manager.exe"' # include the icon file which will appear as the custom file icon, and assign a name to the exe
+        f'--icon={CURRENT_DIR}/res/icon.ico --name "Employee Manager.exe"' # include the icon file which will appear as the custom file icon, and assign a name to the exe
     )
 
-    os.system(cmd)
+    try:
+        subprocess.run(cmd, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Command returned non-zero exit code {e.returncode}")
 
-    # added a wait here so that the above command prompt commands execute before other code outside this function is executed
+    # added a wait time here so that the above command prompt commands execute before other code outside this function is executed
     time.sleep(8)
 
 def __move_res_files():
@@ -52,14 +57,15 @@ def __move_res_files():
         Copies the 'res/icon.png' file into the 'dist/res' subfolder.
     '''
 
-    output_dir = os.path.join(current_dir, 'dist')  # specify the output directory for the generated exe
+    # specify the output directory for the generated exe
+    output_dir = os.path.join(CURRENT_DIR, 'dist')
 
     # create the 'res' folder in the 'dist' directory if it doesn't exist
     res_dir = os.path.join(output_dir, 'res')
     os.makedirs(res_dir, exist_ok=True)
 
     # copy the 'res/icon.png' file into the exe output dir under subfolder 'res'
-    icon_src = os.path.join(current_dir, 'res', 'icon.png')
+    icon_src = os.path.join(CURRENT_DIR, 'res', 'icon.png')
     icon_dest = os.path.join(res_dir, 'icon.png')
     shutil.copy(icon_src, icon_dest)
 
@@ -68,7 +74,7 @@ def __build():
 
     # set current system file and directory location for displaying file location info
     current_file = os.path.basename(__file__)
-    print(f"Buildfile: {os.path.join(current_dir, current_file)}")
+    print(f"Buildfile: {os.path.join(CURRENT_DIR, current_file)}")
 
     __clean()
 
@@ -82,7 +88,7 @@ def __build():
 
     try:
         os.remove(file_path)
-        print(f"The file '{file_path}' has been successfully deleted.")
+        print(f"The '{file_path}' file has been successfully deleted.")
     except FileNotFoundError:
         print(f"The file '{file_path}' does not exist.")
     except PermissionError:
@@ -95,11 +101,12 @@ def __build():
     dist_dest = os.path.join(desktop_path, 'dist')
 
     try:
-        # remove existing 'dist' folder from the desktop if it exists, before copying it over
+        # delete the existing 'dist' folder from the desktop if it already exists
         if os.path.exists(dist_dest):
             shutil.rmtree(dist_dest)
 
-        shutil.move(os.path.join(current_dir, 'dist'), dist_dest)
+        # copy 'dist' folder to the desktop
+        shutil.copytree(os.path.join(CURRENT_DIR, 'dist'), dist_dest)
         print(f"The 'dist' folder has been successfully moved to the desktop.")
     except FileNotFoundError:
         print("Error - The 'dist' folder does not exist.")
@@ -119,7 +126,7 @@ try:
     print("BUILD SUCCESSFUL")
 
     end_time = time.time() # end script execution time tracker
-    execution_time = end_time - start_time # calculate execution time
+    execution_time = end_time - start_time # calculate total script execution time
     print(f"Total time: {execution_time:.2f} seconds")
 except pkg_resources.DistributionNotFound:
     print("Error - pyinstaller is not installed. Please install Python pyinstaller package in pip")

@@ -59,10 +59,10 @@ class Employee_Management_System:
         return self.__work_type
 
     def __str__(self):
-        return 'ID number: ' + self.get_id_number() + \
-                 '\nName: ' + self.get_name() + \
-                 '\nDepartment: ' + self.get_department() + \
-                 '\nTitle: ' + self.get_title() + \
-                 '\nPay rate: ' + self.get_pay_rate() + \
-                 '\nPhone number: ' + self.get_phone_number() + \
-                 '\nEmployee Type: ' + self.get_work_type()
+        return f'ID number: {self.get_id_number()}' \
+               f'\nName: {self.get_name()}' \
+               f'\nDepartment: {self.get_department()}' \
+               f'\nTitle: {self.get_title()}' \
+               f'\nPay rate: {self.get_pay_rate()}' \
+               f'\nPhone number: {self.get_phone_number()}' \
+               f'\nEmployee Type: {self.get_work_type()}'
