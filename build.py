@@ -1,7 +1,7 @@
 '''
 Author: Brian Perel
 Build script for building a standalone executable file using PyInstaller for the project.
-Make sure to have pyinstaller installed in pip and and optionally upx packager before running this script
+Make sure to have pyinstaller installed in pip and optionally upx packager before running this script
 '''
 
 import pkg_resources
@@ -36,7 +36,7 @@ def __create_exe():
         Constructs a command to run PyInstaller with specific options
     '''
 
-    output_dir = os.path.join(CURRENT_DIR, 'dist', 'app')  # Specify the executable output directory path ('dist/app/')
+    output_dir = os.path.join(CURRENT_DIR, 'dist', 'app')  # specify the executable output directory path ('dist/app/')
     source_files = glob.glob(os.path.join(CURRENT_DIR, 'src', '*.py'))  # get a list of all Python files in the src directory
 
     cmd = (
@@ -124,7 +124,7 @@ def __build():
 
     __move_exe_to_desktop()
 
-# Only run the build script if the required pyinstaller package is installed. This check is needed because
+# only run the build script if the required pyinstaller package is installed. This check is needed because
 # pyinstaller is called via command prompt, where the check is not implicitly done.
 try:
     start_time = time.time() # start script execution time tracker
