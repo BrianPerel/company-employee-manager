@@ -1,12 +1,3 @@
-'''
-Author @ Brian Perel
-GUI Employee Management System using XAMPP and mysql-connector module
-* Python UI program that will store information about employees in a company using a dictionary with add, remove, update, look up operations
-* Uses an employee class to set and get employee attributes
-* Program requires user to start XAMPP control panel (Apache server (to be able to reach phpadmin website)
-and MySQL (to be able to connect and perform database actions) modules)
-'''
-
 from tkinter.constants import DISABLED, NORMAL
 import Employee_Management_System as EMS
 import tkinter.messagebox as messagebox
@@ -23,10 +14,9 @@ import os
 class Employee_Db:
 
     # print(__doc__)
-    def __init__(self, SAVED_EMPLOYEES_DATA_FILE, logger, xampp, employees):
+    def __init__(self, SAVED_EMPLOYEES_DATA_FILE, xampp, employees):
         self.SAVED_EMPLOYEES_DATA_FILE = SAVED_EMPLOYEES_DATA_FILE
         self.employees = employees
-        self.logger = logger
         self.xampp = xampp
 
         self.logger = logging.getLogger(__name__)
@@ -61,20 +51,21 @@ class Employee_Db:
 
         connection_closed = False
 
-        # close MySQL connection if one exists
+        # close MySQL database and mycursor connections if they exist
         try:
-            if self.mydb is not None:
+            if self.mycursor is not None:
                 self.mycursor.close()
+            if self.mydb is not None:
                 self.mydb.close()
                 connection_closed = True
-        except mysql.connector.Error:
-            self.logger.error('Error closing db connection')
+        except mysql.connector.Error as err:
+            self.logger.error('Error closing db connection: %s', str(err))
 
-        # close XAMPP app
-        self.xampp.terminate()
-
-        # close gui window
+        # close GUI window
         main_window.destroy()
+
+        # close XAMPP connection
+        self.xampp.terminate()
 
         if connection_closed:
             self.logger.info('Employee application, company database connection, and xampp module successfully closed')
@@ -102,8 +93,8 @@ class Employee_Db:
     def open_db_website(self):
         try:
             webbrowser.open('http://localhost/phpmyadmin/index.php?route=/sql&server=1&db=company&table=employees', new=1)
-        except webbrowser.Error:
-            self.logger.error("Failed to open DB website.")
+        except webbrowser.Error as err:
+            self.logger.error("Failed to open DB website: %s", str(err))
 
     def look_up_employee(self, gui):
         ''' actions performed for when looking up an employee

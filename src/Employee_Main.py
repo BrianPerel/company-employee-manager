@@ -12,6 +12,15 @@ import time
 import glob
 import os
 
+'''
+Author @ Brian Perel
+GUI Employee Management System using XAMPP and mysql-connector module
+* Python UI program that will store information about employees in a company using a dictionary with add, remove, update, and look up operations
+* Uses an employee class to set and get the employee attributes
+* Program requires user to start XAMPP control panel (Apache http server (to be able to reach phpadmin website)
+and MySQL (to be able to connect and perform database actions) modules)
+'''
+
 class Employee_Main:
 
     def __init__(self):
@@ -39,7 +48,7 @@ class Employee_Main:
             except FileNotFoundError as e:
                 self.logger.error(f"An error occurred while loading .dat file: {e}")
 
-            EMS_Gui.Employee_Gui(self.logger, EMS_Db.Employee_Db(self.SAVED_EMPLOYEES_DATA_FILE, self.logger, self.xampp, self.employees))
+            EMS_Gui.Employee_Gui(EMS_Db.Employee_Db(self.SAVED_EMPLOYEES_DATA_FILE, self.xampp, self.employees))
 
     def __start_xampp(self):
         # start XAMPP control panel using the subprocess module

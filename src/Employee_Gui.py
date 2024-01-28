@@ -3,13 +3,13 @@ import logging
 
 class Employee_Gui:
 
-    def __init__(self, logger, db):
-        self.logger = logger
+    def __init__(self, db):
         self.logger = logging.getLogger(__name__)
 
         self.__create_gui(db)
         db.check_db_size(gui=self)
 
+        self.logger.info("Employee GUI Main Menu started")
         self.clear_gui_entry_fields()
         self.main_window.mainloop()
 
@@ -177,7 +177,7 @@ class Employee_Gui:
             # if user clicks in this text field box with their keyboard, call this function
             entry.bind('<FocusIn>', self.__on_click)
             # if insertion pointer leaves current text field (focus is lost) call this function
-            entry.bind('<FocusOut>', lambda event, entry=entry: self.__focus_out(event, entry))
+            entry.bind('<FocusOut>', lambda event, entry=entry: self.__focus_out(entry))
             entry.config(width=15, font=('Courier', 10), bd=2, highlightthickness=1, highlightcolor='black', foreground='grey', validate="key", validatecommand=(self.main_window.register(self.__validate_entry), '%P'))
 
         self.tooltip = None
@@ -230,7 +230,7 @@ class Employee_Gui:
         if event.widget.get() in ['Enter id...', 'Enter name...', 'Enter dept...', 'Enter title...', 'Enter pay...', 'XXX-XXX-XXXX']:
             event.widget.delete(0, tk.END)
 
-    def __focus_out(self, event, entry_widget):
+    def __focus_out(self, entry_widget):
 
         if entry_widget == self.id_output_entry and self.output_entry_var1.get().strip() == '':
             self.output_entry_var1.set('Enter id...')

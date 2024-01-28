@@ -31,6 +31,8 @@ def __create_exe():
     ''' Creates the executable:
         Defines the output directory for the executable ('dist/app/').
         Retrieves a list of Python files in the 'src' directory.
+        Utilizes the UPX packer for efficient packaging.
+        Applies a custom exe output file name along with a custom icon file
         Constructs a command to run PyInstaller with specific options
     '''
 
@@ -39,8 +41,8 @@ def __create_exe():
 
     cmd = (
         f'start /min cmd /c pyinstaller --upx-dir=C:\\upx-4.0.2-win64 --noconsole --onefile ' # call the pyinstaller to package the python scripts using upx packager
-        f'--distpath="{output_dir}" '  # set the output directory for generated exe
-        f'{" ".join(source_files)} ' # include all Python scripts from the src directory
+        f'--distpath="{output_dir}" '  # set the output directory for the generated exe
+        f'{" ".join(source_files)} ' # include all Python script files from the src directory
         f'--icon={CURRENT_DIR}/res/icon.ico --name "Employee Manager.exe"' # include the icon file which will appear as the custom file icon, and assign a name to the exe
     )
 
@@ -69,6 +71,27 @@ def __move_res_files():
     icon_dest = os.path.join(res_dir, 'icon.png')
     shutil.copy(icon_src, icon_dest)
 
+def __move_exe_to_desktop():
+    print("copying dist folder to the desktop")
+     # move the 'dist' folder to the user's desktop
+    desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+    dist_dest = os.path.join(desktop_path, 'dist')
+
+    try:
+        # delete the existing 'dist' folder from the desktop if it already exists
+        if os.path.exists(dist_dest):
+            shutil.rmtree(dist_dest)
+
+        # copy 'dist' folder to the desktop
+        shutil.copytree(os.path.join(CURRENT_DIR, 'dist'), dist_dest)
+        print(f"The 'dist' folder has been successfully copied to the desktop.")
+    except FileNotFoundError:
+        print("Error - The 'dist' folder does not exist.")
+    except PermissionError:
+        print("Permission error - Unable to move the 'dist' folder.")
+    except Exception as e:
+        print(f"An error occurred while moving the 'dist' folder: {e}")
+
 def __build():
     ''' custom build file that converts the python src code to a single packaged (distributable) executable file '''
 
@@ -78,7 +101,7 @@ def __build():
 
     __clean()
 
-    print("create-Employee Manager.exe")
+    print("creating Employee Manager.exe")
 
     __create_exe()
 
@@ -96,24 +119,10 @@ def __build():
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    # move the 'dist' folder to the user's desktop
-    desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
-    dist_dest = os.path.join(desktop_path, 'dist')
+    # provide extra time to allow the current dist folder creation process to complete before copying directory to desktop
+    time.sleep(2)
 
-    try:
-        # delete the existing 'dist' folder from the desktop if it already exists
-        if os.path.exists(dist_dest):
-            shutil.rmtree(dist_dest)
-
-        # copy 'dist' folder to the desktop
-        shutil.copytree(os.path.join(CURRENT_DIR, 'dist'), dist_dest)
-        print(f"The 'dist' folder has been successfully moved to the desktop.")
-    except FileNotFoundError:
-        print("Error - The 'dist' folder does not exist.")
-    except PermissionError:
-        print("Permission error - Unable to move the 'dist' folder.")
-    except Exception as e:
-        print(f"An error occurred while moving the 'dist' folder: {e}")
+    __move_exe_to_desktop()
 
 # Only run the build script if the required pyinstaller package is installed. This check is needed because
 # pyinstaller is called via command prompt, where the check is not implicitly done.
